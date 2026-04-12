@@ -225,7 +225,7 @@
     if (imgFile) form.append('image', imgFile);
 
     const token = getToken();
-    const url = id ? `/api/stocks/${id}` : '/api/stocks';
+    const url = id ? `${API}/api/stocks/${id}` : `${API}/api/stocks`;
     const method = id ? 'PUT' : 'POST';
     const res = await fetch(url, { method, headers: { Authorization: `Bearer ${token}` }, body: form });
     const data = await res.json();

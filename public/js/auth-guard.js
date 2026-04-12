@@ -1,5 +1,5 @@
 // Auth guard & shared utilities for dashboard and admin pages
-const API = '';
+const API = 'https://life-ktxw.onrender.com';
 
 function getToken() { return localStorage.getItem('token'); }
 function getUser()  { return JSON.parse(localStorage.getItem('user') || 'null'); }
