@@ -49,7 +49,6 @@
 <script src="/js/admin-guard.js"></script>
 <script>
   if (!requireAdmin()) throw '';
-  initSidebarToggle();
   let currentAction = {}, deposits = [];
 
   async function loadSidebar() {

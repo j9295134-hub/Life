@@ -69,7 +69,6 @@
 <script src="/js/admin-guard.js"></script>
 <script>
   if (!requireAdmin()) throw '';
-  initSidebarToggle();
 
   async function loadStats() {
     const data = await apiFetch('/api/admin/stats');
