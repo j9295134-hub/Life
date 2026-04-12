@@ -115,9 +115,12 @@
       const now = Date.now(), end = new Date(inv.endDate).getTime(), start = new Date(inv.startDate).getTime();
       const pct = Math.min(100, Math.max(0, Math.round(((now - start) / (end - start)) * 100)));
       const daysLeft = Math.max(0, Math.ceil((end - now) / 86400000));
+      const imgHtml = inv.stockSnapshot?.image
+        ? `<img src="${inv.stockSnapshot.image}" alt="${inv.stockSnapshot.name}" class="investment-img"/>`
+        : `<div class="investment-img-placeholder">${icons[inv.stockSnapshot?.category]||'🌱'}</div>`;
       return `
       <div class="investment-card">
-        <div class="investment-img-placeholder">${icons[inv.stockSnapshot?.category]||'🌱'}</div>
+        ${imgHtml}
         <div class="investment-info" style="flex:1;">
           <div class="inv-name">${inv.stockSnapshot?.name || 'Investment'}</div>
           <div class="inv-meta">${inv.stockSnapshot?.category} • ${daysLeft > 0 ? daysLeft + ' day(s) remaining' : 'Maturing soon'}</div>
