@@ -2,7 +2,7 @@
   "rewrites": [
     { "source": "/dashboard/(.*)", "destination": "/dashboard/index.html" },
     { "source": "/admin/(.*)", "destination": "/admin/index.html" },
-    { "source": "/api/(.*)", "destination": "https://your-render-app.onrender.com/api/$1" },
+    { "source": "/api/(.*)", "destination": "https://life-ktxw.onrender.com/api/$1" },
     { "source": "/(.*)", "destination": "/$1" }
   ],
   "headers": [
