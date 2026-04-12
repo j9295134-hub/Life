@@ -2,9 +2,23 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
+const fetch = require('node-fetch');
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 const Settings = require('../models/Settings');
+
+async function verifyRecaptcha(token) {
+  if (!token) return false;
+  try {
+    const r = await fetch(`https://www.google.com/recaptcha/api/siteverify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${token}`
+    });
+    const data = await r.json();
+    return data.success === true;
+  } catch { return false; }
+}
 
 const REFERRAL_BONUS = 10;
 
@@ -39,7 +53,9 @@ const generateRef = () => 'REF-' + Date.now() + '-' + Math.random().toString(36)
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
   try {
-    const { fullName, email, phone, password, country, referralCode } = req.body;
+    const { fullName, email, phone, password, country, referralCode, recaptcha } = req.body;
+    const captchaOk = await verifyRecaptcha(recaptcha);
+    if (!captchaOk) return res.status(400).json({ success: false, message: 'reCAPTCHA verification failed. Please try again.' });
     if (!fullName || !email || !phone || !password || !country) {
       return res.status(400).json({ success: false, message: 'All fields are required.' });
     }
@@ -111,7 +127,9 @@ router.post('/register', async (req, res) => {
 // POST /api/auth/login
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, recaptcha } = req.body;
+    const captchaOk = await verifyRecaptcha(recaptcha);
+    if (!captchaOk) return res.status(400).json({ success: false, message: 'reCAPTCHA verification failed. Please try again.' });
     if (!email || !password) return res.status(400).json({ success: false, message: 'Email and password are required.' });
 
     const user = await User.findOne({ email });

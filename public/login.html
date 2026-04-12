@@ -49,8 +49,7 @@
 
       <!-- reCAPTCHA -->
       <div class="form-group">
-        <div class="g-recaptcha" data-sitekey="YOUR_RECAPTCHA_SITE_KEY"></div>
-        <p style="font-size:11px;color:var(--text-muted);margin-top:6px;">Replace YOUR_RECAPTCHA_SITE_KEY with your actual key.</p>
+        <div class="g-recaptcha" data-sitekey="6Lf1QrQsAAAAAOhMJ_EwrjzVJ4akW8NZbsG4-wp1"></div>
       </div>
 
       <button type="submit" class="btn btn-primary" style="width:100%;margin-top:4px;" id="loginBtn">
@@ -91,7 +90,8 @@
 
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
-    const recaptcha = grecaptcha?.getResponse() || 'bypass_for_dev';
+    const recaptcha = grecaptcha?.getResponse() || '';
+    if (!recaptcha) { showAlert('Please complete the reCAPTCHA verification.'); btn.disabled = false; btnText.textContent = 'Sign In to Dashboard'; spinner.style.display = 'none'; return; }
 
     try {
       const res = await fetch('/api/auth/login', {
