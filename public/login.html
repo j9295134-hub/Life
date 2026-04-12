@@ -6,7 +6,6 @@
   <title>Sign In — AgricLife</title>
   <link rel="icon" type="image/svg+xml" href="/assets/logo.svg"/>
   <link rel="stylesheet" href="/css/style.css"/>
-  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
 <div class="auth-page">
@@ -123,5 +122,6 @@
     window.location.href = user.role === 'admin' ? '/admin/index.html' : '/dashboard/index.html';
   }
 </script>
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </body>
 </html>
