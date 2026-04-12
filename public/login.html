@@ -48,7 +48,7 @@
 
       <!-- reCAPTCHA v2 -->
       <div class="form-group">
-        <div class="g-recaptcha" data-sitekey="6LccSbQsAAAAAd82xVA8YOH_BoXbdgu2qqEBwf4" data-size="normal" style="transform:scale(0.9);transform-origin:0 0;max-height:78px;overflow:hidden;"></div>
+        <div id="recaptcha-login" style="transform:scale(0.9);transform-origin:0 0;"></div>
       </div>
 
       <button type="submit" class="btn btn-primary" style="width:100%;margin-top:4px;" id="loginBtn">
@@ -122,6 +122,11 @@
     window.location.href = user.role === 'admin' ? '/admin/index.html' : '/dashboard/index.html';
   }
 </script>
-<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+<script>
+  var onRecaptchaLoad = function() {
+    grecaptcha.render('recaptcha-login', { sitekey: '6LccSbQsAAAAAd82xVA8YOH_BoXbdgu2qqEBwf4', size: 'normal' });
+  };
+</script>
+<script src="https://www.google.com/recaptcha/api.js?onload=onRecaptchaLoad&render=explicit" async defer></script>
 </body>
 </html>
