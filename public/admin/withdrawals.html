@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Withdrawal Requests — Admin</title>
+  <link rel="stylesheet" href="/css/style.css"/>
+  <link rel="stylesheet" href="/css/dashboard.css"/>
+</head>
+<body>
+<div class="dash-layout">
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <aside class="sidebar admin-sidebar" id="sidebar"></aside>
+  <main class="dash-main">
+    <div class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="hamburger-dash" id="hamburgerDash"><span></span><span></span><span></span></div>
+        <div class="topbar-title">Withdrawal Requests</div>
+      </div>
+    </div>
+    <div class="dash-content">
+      <div class="filter-bar">
+        <select class="form-control form-select" id="statusFilter" onchange="loadWithdrawals()" style="max-width:180px;">
+          <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+          <option value="">All</option>
+        </select>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><h3>Withdrawal Requests</h3><span id="witCount" class="badge badge-warning">0 Pending</span></div>
+        <div class="panel-body table-wrap" id="withdrawalTable">
+          <div style="text-align:center;padding:40px;color:var(--text-muted);">Loading...</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Action Modal -->
+<div class="modal-overlay" id="actionModal">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-header"><h3 id="actionTitle">Confirm Action</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div id="actionBody"></div>
+  </div>
+</div>
+
+<script src="/js/auth-guard.js"></script>
+<script src="/js/admin-guard.js"></script>
+<script>
+  if (!requireAdmin()) throw '';
+  initSidebarToggle();
+  let currentAction = {};
+
+  async function loadSidebar() {
+    const stats = await apiFetch('/api/admin/stats');
+    document.getElementById('sidebar').innerHTML = buildAdminSidebar(stats?.stats?.pendingDeposits, stats?.stats?.pendingWithdrawals);
+    setSidebarActive('nav-awithdrawals');
+    initSidebarToggle();
+  }
+
+  async function loadWithdrawals() {
+    const status = document.getElementById('statusFilter').value;
+    const data = await apiFetch('/api/admin/withdrawals' + (status ? '?status=' + status : ''));
+    const table = document.getElementById('withdrawalTable');
+    const withdrawals = data?.withdrawals || [];
+    const pending = withdrawals.filter(d => d.status === 'pending').length;
+    document.getElementById('witCount').textContent = `${pending} Pending`;
+    if (!withdrawals.length) { table.innerHTML = `<div class="empty-state"><div class="empty-icon">✅</div><h3>No Withdrawals Found</h3></div>`; return; }
+    table.innerHTML = `<table><thead><tr><th>User</th><th>Amount</th><th>Method</th><th>Send To</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead><tbody>` +
+      withdrawals.map(d => {
+        const acc = d.accountDetails || {};
+        const sendTo = acc.network ? `${acc.network} MoMo: ${acc.accountNumber} (${acc.accountName})` : `${acc.bankName||'Bank'}: ${acc.accountNumber} (${acc.accountName})`;
+        return `<tr>
+          <td><div class="td-user"><div class="td-avatar">${(d.user?.fullName||'?')[0].toUpperCase()}</div><div><div class="td-name">${d.user?.fullName||'—'}</div><div class="td-email">${d.user?.email||''}</div></div></div></td>
+          <td><strong style="color:var(--primary);">${d.user?.currencySymbol||'GH₵'}${d.amount}</strong></td>
+          <td style="font-size:12px;">${(d.method||'').replace(/_/g,' ')}</td>
+          <td style="font-size:12px;max-width:180px;">${sendTo}</td>
+          <td style="font-size:12px;">${new Date(d.createdAt).toLocaleString()}</td>
+          <td>${statusBadge(d.status)}</td>
+          <td>
+            ${d.status === 'pending' ? `
+            <div class="action-btns">
+              <button class="action-btn action-btn-approve" onclick="openAction('${d._id}','approve','${d.user?.fullName||''}','${d.amount}','${d.user?.currencySymbol||'GH₵'}','${sendTo.replace(/'/g,'')}')">Approve</button>
+              <button class="action-btn action-btn-reject" onclick="openAction('${d._id}','reject','${d.user?.fullName||''}','${d.amount}','${d.user?.currencySymbol||'GH₵'}','${sendTo.replace(/'/g,'')}')">Reject</button>
+            </div>` : '<span style="font-size:12px;color:var(--text-muted);">Processed</span>'}
+          </td>
+        </tr>`;
+      }).join('') + `</tbody></table>`;
+  }
+
+  function openAction(id, action, name, amount, sym, sendTo) {
+    currentAction = { id, action };
+    const isApprove = action === 'approve';
+    document.getElementById('actionTitle').textContent = isApprove ? '✅ Approve Withdrawal' : '❌ Reject Withdrawal';
+    document.getElementById('actionBody').innerHTML = `
+      <div style="background:${isApprove?'#fff3cd':'rgba(30,107,60,.07)'};border-radius:10px;padding:16px;margin-bottom:16px;">
+        <div style="font-weight:600;margin-bottom:8px;">${name}</div>
+        <div style="font-size:1.2rem;font-weight:800;color:var(--primary);margin-bottom:8px;">${sym}${amount}</div>
+        ${isApprove ? `<div style="font-size:13px;padding:10px;background:rgba(200,151,26,.12);border-radius:8px;"><strong>Send payment to:</strong><br>${sendTo}</div>` : `<div style="font-size:13px;color:var(--text-muted);">The request will be rejected and funds refunded to user wallet.</div>`}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Admin Note (optional)</label>
+        <textarea class="form-control" id="adminNote" rows="2" placeholder="Add a note..."></textarea>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-outline" style="flex:1;" onclick="closeModal()">Cancel</button>
+        <button class="btn ${isApprove?'btn-accent':'btn-outline'}" style="flex:2;${isApprove?'':'border-color:#dc3545;color:#dc3545;'}" onclick="confirmAction()">
+          ${isApprove ? '✅ Mark as Paid & Approve' : '❌ Reject & Refund'}
+        </button>
+      </div>`;
+    document.getElementById('actionModal').classList.add('active');
+  }
+
+  function closeModal() { document.getElementById('actionModal').classList.remove('active'); }
+
+  async function confirmAction() {
+    const { id, action } = currentAction;
+    const adminNote = document.getElementById('adminNote').value;
+    const data = await apiFetch(`/api/admin/withdrawals/${id}/confirm`, { method:'PUT', body: JSON.stringify({ action, adminNote }) });
+    closeModal();
+    if (data?.success) { showToast(data.message, 'success'); loadWithdrawals(); loadSidebar(); }
+    else showToast(data?.message || 'Action failed.', 'error');
+  }
+
+  loadSidebar();
+  loadWithdrawals();
+</script>
+</body>
+</html>

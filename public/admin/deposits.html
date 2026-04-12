@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Deposit Requests — Admin</title>
+  <link rel="stylesheet" href="/css/style.css"/>
+  <link rel="stylesheet" href="/css/dashboard.css"/>
+</head>
+<body>
+<div class="dash-layout">
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <aside class="sidebar admin-sidebar" id="sidebar"></aside>
+  <main class="dash-main">
+    <div class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="hamburger-dash" id="hamburgerDash"><span></span><span></span><span></span></div>
+        <div class="topbar-title">Deposit Requests</div>
+      </div>
+    </div>
+    <div class="dash-content">
+      <div class="filter-bar">
+        <select class="form-control form-select" id="statusFilter" onchange="loadDeposits()" style="max-width:180px;">
+          <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+          <option value="">All</option>
+        </select>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><h3>Deposit Requests</h3><span id="depCount" class="badge badge-warning">0 Pending</span></div>
+        <div class="panel-body table-wrap" id="depositTable">
+          <div style="text-align:center;padding:40px;color:var(--text-muted);">Loading...</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Action Modal -->
+<div class="modal-overlay" id="actionModal">
+  <div class="modal" style="max-width:440px;">
+    <div class="modal-header"><h3 id="actionTitle">Confirm Action</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div id="actionBody"></div>
+  </div>
+</div>
+
+<script src="/js/auth-guard.js"></script>
+<script src="/js/admin-guard.js"></script>
+<script>
+  if (!requireAdmin()) throw '';
+  initSidebarToggle();
+  let currentAction = {}, deposits = [];
+
+  async function loadSidebar() {
+    const stats = await apiFetch('/api/admin/stats');
+    document.getElementById('sidebar').innerHTML = buildAdminSidebar(stats?.stats?.pendingDeposits, stats?.stats?.pendingWithdrawals);
+    setSidebarActive('nav-adeposits');
+    initSidebarToggle();
+  }
+
+  async function loadDeposits() {
+    const status = document.getElementById('statusFilter').value;
+    const data = await apiFetch('/api/admin/deposits' + (status ? '?status=' + status : ''));
+    const table = document.getElementById('depositTable');
+    deposits = data?.deposits || [];
+    const pending = deposits.filter(d => d.status === 'pending').length;
+    document.getElementById('depCount').textContent = `${pending} Pending`;
+    if (!deposits.length) { table.innerHTML = `<div class="empty-state"><div class="empty-icon">✅</div><h3>No Deposits Found</h3></div>`; return; }
+    table.innerHTML = `<table><thead><tr><th>User</th><th>Amount</th><th>Method</th><th>Account Details</th><th>Txn ID</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead><tbody>` +
+      deposits.map(d => `
+      <tr>
+        <td><div class="td-user"><div class="td-avatar">${(d.user?.fullName||'?')[0].toUpperCase()}</div><div><div class="td-name">${d.user?.fullName||'—'}</div><div class="td-email">${d.user?.email||''}</div></div></div></td>
+        <td><strong>${d.user?.currencySymbol||'GH₵'}${d.amount}</strong></td>
+        <td style="font-size:12px;">${(d.method||'').replace(/_/g,' ')}</td>
+        <td style="font-size:12px;">${d.accountDetails?.accountName||'—'}<br>${d.accountDetails?.accountNumber||''}</td>
+        <td style="font-size:12px;font-family:monospace;color:var(--primary);">${d.transactionId||'—'}</td>
+        <td style="font-size:12px;">${new Date(d.createdAt).toLocaleString()}</td>
+        <td>${statusBadge(d.status)}</td>
+        <td>
+          ${d.status === 'pending' ? `
+          <div class="action-btns">
+            <button class="action-btn action-btn-approve" onclick="openAction('${d._id}','approve','deposit','${d.user?.fullName||''}','${d.amount}','${d.user?.currencySymbol||'GH₵'}')">Approve</button>
+            <button class="action-btn action-btn-reject" onclick="openAction('${d._id}','reject','deposit','${d.user?.fullName||''}','${d.amount}','${d.user?.currencySymbol||'GH₵'}')">Reject</button>
+          </div>` : '<span style="font-size:12px;color:var(--text-muted);">Processed</span>'}
+        </td>
+      </tr>`).join('') + `</tbody></table>`;
+  }
+
+  function openAction(id, action, type, name, amount, sym) {
+    currentAction = { id, action, type };
+    const isApprove = action === 'approve';
+    document.getElementById('actionTitle').textContent = isApprove ? '✅ Approve Deposit' : '❌ Reject Deposit';
+    document.getElementById('actionBody').innerHTML = `
+      <div style="background:${isApprove?'rgba(30,107,60,.07)':'#fff3cd'};border-radius:10px;padding:16px;margin-bottom:16px;">
+        <div style="font-weight:600;margin-bottom:4px;">${name}</div>
+        <div style="font-size:1.2rem;font-weight:800;color:var(--primary);">${sym}${amount}</div>
+        <div style="font-size:13px;color:var(--text-muted);margin-top:4px;">${isApprove?'This amount will be credited to the user wallet.':'The deposit will be rejected. No funds will be credited.'}</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Admin Note (optional)</label>
+        <textarea class="form-control" id="adminNote" rows="2" placeholder="Add a note for this action..."></textarea>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-outline" style="flex:1;" onclick="closeModal()">Cancel</button>
+        <button class="btn ${isApprove?'btn-primary':'btn-accent'}" style="flex:2;" onclick="confirmAction()">
+          ${isApprove ? 'Approve & Credit Wallet' : 'Reject Deposit'}
+        </button>
+      </div>`;
+    document.getElementById('actionModal').classList.add('active');
+  }
+
+  function closeModal() { document.getElementById('actionModal').classList.remove('active'); }
+
+  async function confirmAction() {
+    const { id, action, type } = currentAction;
+    const adminNote = document.getElementById('adminNote').value;
+    const url = type === 'deposit' ? `/api/admin/deposits/${id}/confirm` : `/api/admin/withdrawals/${id}/confirm`;
+    const data = await apiFetch(url, { method:'PUT', body: JSON.stringify({ action, adminNote }) });
+    closeModal();
+    if (data?.success) { showToast(data.message, 'success'); loadDeposits(); loadSidebar(); }
+    else showToast(data?.message || 'Action failed.', 'error');
+  }
+
+  loadSidebar();
+  loadDeposits();
+</script>
+</body>
+</html>

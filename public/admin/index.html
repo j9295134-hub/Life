@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard — AgricLife</title>
+  <link rel="stylesheet" href="/css/style.css"/>
+  <link rel="stylesheet" href="/css/dashboard.css"/>
+</head>
+<body>
+<div class="dash-layout">
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <aside class="sidebar admin-sidebar" id="sidebar"></aside>
+  <main class="dash-main">
+    <div class="dash-topbar admin-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="hamburger-dash" id="hamburgerDash"><span></span><span></span><span></span></div>
+        <div class="topbar-title">Admin Overview</div>
+      </div>
+      <div class="topbar-right">
+        <span style="font-size:13px;color:var(--text-muted);">Welcome, Admin</span>
+      </div>
+    </div>
+    <div class="dash-content">
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-card-icon icon-blue">👥</div><div class="stat-card-info"><div class="stat-label">Total Users</div><div class="stat-val" id="s-users">—</div></div></div>
+        <div class="stat-card"><div class="stat-card-icon icon-green">🌱</div><div class="stat-card-info"><div class="stat-label">Active Investments</div><div class="stat-val" id="s-inv">—</div></div></div>
+        <div class="stat-card"><div class="stat-card-icon icon-gold">💰</div><div class="stat-card-info"><div class="stat-label">Pending Deposits</div><div class="stat-val" id="s-pdep" style="color:var(--accent)">—</div></div></div>
+        <div class="stat-card"><div class="stat-card-icon icon-purple">💸</div><div class="stat-card-info"><div class="stat-label">Pending Withdrawals</div><div class="stat-val" id="s-pwit" style="color:var(--accent)">—</div></div></div>
+        <div class="stat-card"><div class="stat-card-icon icon-green">📦</div><div class="stat-card-info"><div class="stat-label">Active Stocks</div><div class="stat-val" id="s-stocks">—</div></div></div>
+        <div class="stat-card"><div class="stat-card-icon icon-gold">📥</div><div class="stat-card-info"><div class="stat-label">Total Deposited</div><div class="stat-val" id="s-tdep">—</div></div></div>
+        <div class="stat-card"><div class="stat-card-icon icon-purple">📤</div><div class="stat-card-info"><div class="stat-label">Total Withdrawn</div><div class="stat-val" id="s-twit">—</div></div></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+        <!-- Pending Deposits -->
+        <div class="panel">
+          <div class="panel-header"><h3>⏳ Pending Deposits</h3><a href="/admin/deposits.html" class="btn btn-outline btn-sm">View All</a></div>
+          <div class="panel-body table-wrap" id="pendingDepTable">
+            <div style="text-align:center;padding:30px;color:var(--text-muted);">Loading...</div>
+          </div>
+        </div>
+        <!-- Pending Withdrawals -->
+        <div class="panel">
+          <div class="panel-header"><h3>⏳ Pending Withdrawals</h3><a href="/admin/withdrawals.html" class="btn btn-outline btn-sm">View All</a></div>
+          <div class="panel-body table-wrap" id="pendingWitTable">
+            <div style="text-align:center;padding:30px;color:var(--text-muted);">Loading...</div>
+          </div>
+        </div>
+        <!-- Quick Links -->
+        <div class="panel" style="grid-column:1/-1;">
+          <div class="panel-header"><h3>Quick Actions</h3></div>
+          <div class="panel-body">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;">
+              <a href="/admin/stocks.html#add" class="btn btn-primary" style="flex-direction:column;height:72px;gap:4px;border-radius:12px;"><span style="font-size:1.3rem;">➕</span><span style="font-size:13px;">Add New Stock</span></a>
+              <a href="/admin/deposits.html" class="btn btn-outline" style="flex-direction:column;height:72px;gap:4px;border-radius:12px;"><span style="font-size:1.3rem;">💰</span><span style="font-size:13px;">Review Deposits</span></a>
+              <a href="/admin/withdrawals.html" class="btn btn-outline" style="flex-direction:column;height:72px;gap:4px;border-radius:12px;"><span style="font-size:1.3rem;">💸</span><span style="font-size:13px;">Process Withdrawals</span></a>
+              <a href="/admin/users.html" class="btn btn-outline" style="flex-direction:column;height:72px;gap:4px;border-radius:12px;"><span style="font-size:1.3rem;">👥</span><span style="font-size:13px;">Manage Users</span></a>
+              <a href="/admin/settings.html" class="btn btn-outline" style="flex-direction:column;height:72px;gap:4px;border-radius:12px;"><span style="font-size:1.3rem;">⚙️</span><span style="font-size:13px;">Settings</span></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/js/auth-guard.js"></script>
+<script src="/js/admin-guard.js"></script>
+<script>
+  if (!requireAdmin()) throw '';
+  initSidebarToggle();
+
+  async function loadStats() {
+    const data = await apiFetch('/api/admin/stats');
+    if (!data?.success) return;
+    const s = data.stats;
+    document.getElementById('s-users').textContent = s.totalUsers;
+    document.getElementById('s-inv').textContent = s.activeInvestments;
+    document.getElementById('s-pdep').textContent = s.pendingDeposits;
+    document.getElementById('s-pwit').textContent = s.pendingWithdrawals;
+    document.getElementById('s-stocks').textContent = s.totalStocks;
+    document.getElementById('s-tdep').textContent = `GH₵${s.totalDeposited.toLocaleString()}`;
+    document.getElementById('s-twit').textContent = `GH₵${s.totalWithdrawn.toLocaleString()}`;
+    document.getElementById('sidebar').innerHTML = buildAdminSidebar(s.pendingDeposits, s.pendingWithdrawals);
+    setSidebarActive('nav-adash');
+    initSidebarToggle();
+  }
+
+  async function loadPendingDeposits() {
+    const data = await apiFetch('/api/admin/deposits?status=pending');
+    const panel = document.getElementById('pendingDepTable');
+    if (!data?.success || !data.deposits.length) { panel.innerHTML = `<div class="empty-state" style="padding:30px;"><div class="empty-icon" style="font-size:2rem;">✅</div><p>No pending deposits.</p></div>`; return; }
+    panel.innerHTML = `<table><thead><tr><th>User</th><th>Amount</th><th>Method</th><th>Action</th></tr></thead><tbody>` +
+      data.deposits.slice(0,5).map(d => `
+      <tr>
+        <td><div class="td-name">${d.user?.fullName||'—'}</div></td>
+        <td><strong>GH₵${d.amount}</strong></td>
+        <td style="font-size:12px;">${(d.method||'').replace(/_/g,' ')}</td>
+        <td><div class="action-btns"><button class="action-btn action-btn-approve" onclick="quickAction('deposits','${d._id}','approve')">Approve</button><button class="action-btn action-btn-reject" onclick="quickAction('deposits','${d._id}','reject')">Reject</button></div></td>
+      </tr>`).join('') + `</tbody></table>`;
+  }
+
+  async function loadPendingWithdrawals() {
+    const data = await apiFetch('/api/admin/withdrawals?status=pending');
+    const panel = document.getElementById('pendingWitTable');
+    if (!data?.success || !data.withdrawals.length) { panel.innerHTML = `<div class="empty-state" style="padding:30px;"><div class="empty-icon" style="font-size:2rem;">✅</div><p>No pending withdrawals.</p></div>`; return; }
+    panel.innerHTML = `<table><thead><tr><th>User</th><th>Amount</th><th>Method</th><th>Action</th></tr></thead><tbody>` +
+      data.withdrawals.slice(0,5).map(d => `
+      <tr>
+        <td><div class="td-name">${d.user?.fullName||'—'}</div></td>
+        <td><strong>GH₵${d.amount}</strong></td>
+        <td style="font-size:12px;">${(d.method||'').replace(/_/g,' ')}</td>
+        <td><div class="action-btns"><button class="action-btn action-btn-approve" onclick="quickAction('withdrawals','${d._id}','approve')">Approve</button><button class="action-btn action-btn-reject" onclick="quickAction('withdrawals','${d._id}','reject')">Reject</button></div></td>
+      </tr>`).join('') + `</tbody></table>`;
+  }
+
+  async function quickAction(type, id, action) {
+    const data = await apiFetch(`/api/admin/${type}/${id}/confirm`, { method:'PUT', body: JSON.stringify({ action }) });
+    if (data?.success) { showToast(data.message, 'success'); loadStats(); loadPendingDeposits(); loadPendingWithdrawals(); }
+    else showToast(data?.message || 'Action failed.', 'error');
+  }
+
+  loadStats();
+  loadPendingDeposits();
+  loadPendingWithdrawals();
+</script>
+</body>
+</html>

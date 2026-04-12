@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Help & Support — AgricLife</title>
+  <link rel="stylesheet" href="/css/style.css"/>
+  <link rel="stylesheet" href="/css/dashboard.css"/>
+</head>
+<body>
+<div class="dash-layout">
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="dash-main">
+    <div class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="hamburger-dash" id="hamburgerDash"><span></span><span></span><span></span></div>
+        <div class="topbar-title">Help & Support</div>
+      </div>
+    </div>
+    <div class="dash-content">
+      <!-- Contact Cards -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px;margin-bottom:28px;" id="contactCards">
+        <div style="background:linear-gradient(135deg,#25d366,#128c7e);border-radius:var(--radius-lg);padding:28px;text-align:center;color:#fff;">
+          <div style="font-size:3rem;margin-bottom:12px;">📱</div>
+          <h3 style="margin-bottom:8px;">WhatsApp Support</h3>
+          <p style="opacity:0.9;font-size:13px;margin-bottom:16px;">Chat with our support team directly on WhatsApp for quick assistance.</p>
+          <a id="whatsappLink" href="#" target="_blank" class="btn btn-white btn-sm">Open WhatsApp →</a>
+        </div>
+        <div style="background:linear-gradient(135deg,#0088cc,#0066a0);border-radius:var(--radius-lg);padding:28px;text-align:center;color:#fff;">
+          <div style="font-size:3rem;margin-bottom:12px;">✈️</div>
+          <h3 style="margin-bottom:8px;">Telegram Support</h3>
+          <p style="opacity:0.9;font-size:13px;margin-bottom:16px;">Join our Telegram group or message us directly for updates and support.</p>
+          <a id="telegramLink" href="#" target="_blank" class="btn btn-white btn-sm">Open Telegram →</a>
+        </div>
+        <div style="background:linear-gradient(135deg,var(--primary-dark),var(--primary));border-radius:var(--radius-lg);padding:28px;text-align:center;color:#fff;">
+          <div style="font-size:3rem;margin-bottom:12px;">📧</div>
+          <h3 style="margin-bottom:8px;">Email Support</h3>
+          <p style="opacity:0.9;font-size:13px;margin-bottom:16px;">Send us an email for detailed inquiries. We respond within 24 hours.</p>
+          <a id="emailLink" href="#" class="btn btn-white btn-sm">Send Email →</a>
+        </div>
+      </div>
+
+      <!-- FAQ -->
+      <div class="panel">
+        <div class="panel-header"><h3>Frequently Asked Questions</h3></div>
+        <div class="panel-body">
+          <div id="faqList">
+            <div class="faq-item" style="border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:16px;">
+              <div class="faq-q" onclick="toggleFaq(this)" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-weight:600;">
+                How do I start investing on AgricLife?
+                <span style="font-size:1.2rem;transition:transform 0.3s;" class="faq-arrow">▼</span>
+              </div>
+              <div class="faq-a" style="display:none;margin-top:10px;font-size:14px;color:var(--text-muted);line-height:1.7;">
+                To start investing: (1) Create a free account, (2) Deposit funds into your wallet via MoMo or bank transfer, (3) Browse our stock portfolios and select one that suits you, (4) Click "Invest Now" — your investment becomes active immediately. Returns are credited automatically when the investment matures.
+              </div>
+            </div>
+            <div class="faq-item" style="border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:16px;">
+              <div class="faq-q" onclick="toggleFaq(this)" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-weight:600;">
+                How long does a deposit take to reflect?
+                <span style="font-size:1.2rem;transition:transform 0.3s;" class="faq-arrow">▼</span>
+              </div>
+              <div class="faq-a" style="display:none;margin-top:10px;font-size:14px;color:var(--text-muted);line-height:1.7;">
+                Deposits are processed manually by our admin team. After you submit your transaction ID, your wallet is typically credited within 1–6 hours during business hours. If your deposit has not been confirmed after 12 hours, please contact our support team via WhatsApp or Telegram.
+              </div>
+            </div>
+            <div class="faq-item" style="border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:16px;">
+              <div class="faq-q" onclick="toggleFaq(this)" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-weight:600;">
+                When are my investment returns credited?
+                <span style="font-size:1.2rem;transition:transform 0.3s;" class="faq-arrow">▼</span>
+              </div>
+              <div class="faq-a" style="display:none;margin-top:10px;font-size:14px;color:var(--text-muted);line-height:1.7;">
+                Returns are credited automatically to your wallet as soon as your investment duration expires. For example, if you invest in a 7-day portfolio today, your principal plus ROI will be in your wallet exactly 7 days from the investment date — no manual action required.
+              </div>
+            </div>
+            <div class="faq-item" style="border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:16px;">
+              <div class="faq-q" onclick="toggleFaq(this)" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-weight:600;">
+                What is the minimum deposit and withdrawal?
+                <span style="font-size:1.2rem;transition:transform 0.3s;" class="faq-arrow">▼</span>
+              </div>
+              <div class="faq-a" style="display:none;margin-top:10px;font-size:14px;color:var(--text-muted);line-height:1.7;">
+                The minimum deposit is GH₵40. The minimum withdrawal is GH₵50. There is no maximum limit. Withdrawals are processed within 24 hours of admin confirmation.
+              </div>
+            </div>
+            <div class="faq-item" style="border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:16px;">
+              <div class="faq-q" onclick="toggleFaq(this)" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-weight:600;">
+                How does the referral program work?
+                <span style="font-size:1.2rem;transition:transform 0.3s;" class="faq-arrow">▼</span>
+              </div>
+              <div class="faq-a" style="display:none;margin-top:10px;font-size:14px;color:var(--text-muted);line-height:1.7;">
+                Share your unique referral link or code with friends. Every time someone registers on AgricLife using your link, you earn GH₵10 instantly credited to your wallet. There is no limit to how many people you can refer.
+              </div>
+            </div>
+            <div class="faq-item">
+              <div class="faq-q" onclick="toggleFaq(this)" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-weight:600;">
+                Is my investment secure?
+                <span style="font-size:1.2rem;transition:transform 0.3s;" class="faq-arrow">▼</span>
+              </div>
+              <div class="faq-a" style="display:none;margin-top:10px;font-size:14px;color:var(--text-muted);line-height:1.7;">
+                AgricLife operates with full transparency. All investment portfolios are managed by certified agricultural professionals. However, as with all investments, there are inherent risks. Please read our <a href="/terms.html" style="color:var(--primary);">Terms & Conditions</a> and <a href="/terms.html#risk" style="color:var(--primary);">Risk Disclosure</a> before investing.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Still Need Help -->
+      <div style="background:var(--bg-light);border-radius:var(--radius-lg);padding:28px;text-align:center;border:1px solid var(--border);">
+        <div style="font-size:2rem;margin-bottom:12px;">💬</div>
+        <h3 style="margin-bottom:8px;">Still need help?</h3>
+        <p style="color:var(--text-muted);font-size:14px;max-width:400px;margin:0 auto 20px;">Our support team is available 7 days a week. Don't hesitate to reach out — we're happy to help.</p>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+          <a id="wa2" href="#" target="_blank" class="btn btn-primary">📱 WhatsApp Us</a>
+          <a id="tg2" href="#" target="_blank" class="btn btn-outline">✈️ Telegram</a>
+          <a id="em2" href="#" class="btn btn-outline">📧 Email Us</a>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/js/auth-guard.js"></script>
+<script>
+  if (!requireAuth()) throw '';
+  const user = getUser();
+  document.getElementById('sidebar').innerHTML = buildSidebar(user);
+  setSidebarActive('nav-support');
+  initSidebarToggle();
+
+  function toggleFaq(el) {
+    const ans = el.nextElementSibling;
+    const arrow = el.querySelector('.faq-arrow');
+    const isOpen = ans.style.display !== 'none';
+    ans.style.display = isOpen ? 'none' : 'block';
+    arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+  }
+
+  async function loadContactInfo() {
+    const data = await apiFetch('/api/admin/settings');
+    const s = data?.settings || {};
+    const wa = s.whatsapp || '#'; const tg = s.telegram || '#'; const em = s.email || '#';
+    document.getElementById('whatsappLink').href = wa.startsWith('http') ? wa : `https://wa.me/${wa.replace(/\D/g,'')}`;
+    document.getElementById('telegramLink').href = tg.startsWith('http') ? tg : `https://t.me/${tg.replace('@','')}`;
+    document.getElementById('emailLink').href = `mailto:${em}`;
+    document.getElementById('wa2').href = document.getElementById('whatsappLink').href;
+    document.getElementById('tg2').href = document.getElementById('telegramLink').href;
+    document.getElementById('em2').href = document.getElementById('emailLink').href;
+  }
+  syncBalance();
+  loadContactInfo();
+</script>
+</body>
+</html>

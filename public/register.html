@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Create Account — AgricLife</title>
+  <link rel="icon" type="image/svg+xml" href="/assets/logo.svg"/>
+  <link rel="stylesheet" href="/css/style.css"/>
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+</head>
+<body>
+<div class="auth-page" style="padding:40px 20px;">
+  <div class="auth-card" style="max-width:540px;">
+    <div class="auth-logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 40 40" fill="none" width="28" height="28">
+          <ellipse cx="20" cy="22" rx="7" ry="12" fill="#52b788" transform="rotate(-15,20,22)"/>
+          <path d="M20 30 Q14 22 18 10" stroke="#c8971a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <circle cx="16" cy="10" r="2.5" fill="#c8971a"/>
+        </svg>
+      </div>
+      <div style="font-size:1.3rem;font-weight:800;color:var(--primary);">Agric<span style="color:var(--accent)">Life</span></div>
+    </div>
+
+    <h2>Create Your Account</h2>
+    <p class="subtitle">Join thousands of investors earning from agriculture</p>
+
+    <div id="alertBox" style="display:none;"></div>
+
+    <form id="registerForm" onsubmit="handleRegister(event)">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" class="form-control" id="fullName" placeholder="John Mensah" required autocomplete="name"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone Number</label>
+          <input type="tel" class="form-control" id="phone" placeholder="+233 24 000 0000" required autocomplete="tel"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <div class="input-group">
+          <span class="input-icon">📧</span>
+          <input type="email" class="form-control" id="email" placeholder="you@example.com" required autocomplete="email"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Country of Residence</label>
+        <select class="form-control form-select" id="country" required onchange="updateCurrency()">
+          <option value="">— Select your country —</option>
+          <option value="Ghana">Ghana (GH₵)</option>
+          <option value="Nigeria">Nigeria (₦)</option>
+          <option value="Kenya">Kenya (KSh)</option>
+          <option value="South Africa">South Africa (R)</option>
+          <option value="Uganda">Uganda (USh)</option>
+          <option value="Tanzania">Tanzania (TSh)</option>
+          <option value="Rwanda">Rwanda (RF)</option>
+          <option value="Zambia">Zambia (ZK)</option>
+          <option value="Zimbabwe">Zimbabwe ($)</option>
+          <option value="Ethiopia">Ethiopia (Br)</option>
+          <option value="Cameroon">Cameroon (FCFA)</option>
+          <option value="Ivory Coast">Ivory Coast (CFA)</option>
+          <option value="Senegal">Senegal (CFA)</option>
+          <option value="United States">United States ($)</option>
+          <option value="United Kingdom">United Kingdom (£)</option>
+          <option value="Canada">Canada (CA$)</option>
+          <option value="Australia">Australia (A$)</option>
+          <option value="Germany">Germany (€)</option>
+          <option value="France">France (€)</option>
+        </select>
+        <p id="currencyNote" style="font-size:12px;color:var(--primary);margin-top:4px;display:none;"></p>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <div class="input-group">
+            <span class="input-icon">🔒</span>
+            <input type="password" class="form-control" id="password" placeholder="Min. 8 characters" required autocomplete="new-password" style="padding-right:42px;"/>
+            <span onclick="togglePwd('password')" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:15px;">👁️</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirm Password</label>
+          <div class="input-group">
+            <span class="input-icon">🔒</span>
+            <input type="password" class="form-control" id="confirmPassword" placeholder="Repeat password" required autocomplete="new-password" style="padding-right:42px;"/>
+            <span onclick="togglePwd('confirmPassword')" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:15px;">👁️</span>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Referral Code <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
+        <input type="text" class="form-control" id="referralCode" placeholder="Enter referral code if you have one"/>
+      </div>
+
+      <!-- reCAPTCHA -->
+      <div class="form-group">
+        <div class="g-recaptcha" data-sitekey="YOUR_RECAPTCHA_SITE_KEY"></div>
+        <p style="font-size:11px;color:var(--text-muted);margin-top:6px;">Replace YOUR_RECAPTCHA_SITE_KEY with your actual key.</p>
+      </div>
+
+      <div class="form-group">
+        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px;color:var(--text-muted);">
+          <input type="checkbox" id="terms" required style="margin-top:2px;flex-shrink:0;accent-color:var(--primary);"/>
+          <span>I agree to the <a href="/terms.html" target="_blank" style="color:var(--primary);font-weight:600;">Terms & Conditions</a> and <a href="/privacy.html" target="_blank" style="color:var(--primary);font-weight:600;">Privacy Policy</a> of AgricLife.</span>
+        </label>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width:100%;" id="regBtn">
+        <span id="regBtnText">Create My Account</span>
+        <span id="regSpinner" class="spinner" style="display:none;"></span>
+      </button>
+    </form>
+
+    <div class="auth-divider"><span>or</span></div>
+    <div class="auth-footer">
+      Already have an account? <a href="/login.html">Sign In</a>
+    </div>
+    <div class="auth-footer" style="margin-top:12px;">
+      <a href="/" style="color:var(--text-muted);">← Back to Home</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  function togglePwd(id) {
+    const f = document.getElementById(id);
+    f.type = f.type === 'password' ? 'text' : 'password';
+  }
+
+  function updateCurrency() {
+    const country = document.getElementById('country').value;
+    const map = { 'Ghana':'GHS (Ghana Cedi)', 'Nigeria':'NGN (Naira)', 'Kenya':'KES (Kenyan Shilling)', 'South Africa':'ZAR (Rand)', 'Uganda':'UGX (Ugandan Shilling)', 'Tanzania':'TZS (Tanzanian Shilling)', 'United States':'USD (US Dollar)', 'United Kingdom':'GBP (British Pound)', 'Germany':'EUR (Euro)', 'France':'EUR (Euro)' };
+    const note = document.getElementById('currencyNote');
+    if (map[country]) { note.style.display = 'block'; note.textContent = `✓ Your wallet currency will be set to ${map[country]}.`; }
+    else { note.style.display = 'none'; }
+  }
+
+  // Pre-fill referral code from URL
+  const urlRef = new URLSearchParams(window.location.search).get('ref');
+  if (urlRef) { document.addEventListener('DOMContentLoaded', () => { document.getElementById('referralCode').value = urlRef; }); }
+
+  function showAlert(msg, type = 'danger') {
+    const box = document.getElementById('alertBox');
+    box.style.display = 'flex'; box.className = `alert alert-${type}`;
+    box.innerHTML = `<span>${type === 'success' ? '✅' : '❌'}</span> ${msg}`;
+    box.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  async function handleRegister(e) {
+    e.preventDefault();
+    const password = document.getElementById('password').value;
+    const confirm = document.getElementById('confirmPassword').value;
+    if (password !== confirm) { showAlert('Passwords do not match.'); return; }
+    if (password.length < 8) { showAlert('Password must be at least 8 characters.'); return; }
+
+    const btn = document.getElementById('regBtn');
+    const btnText = document.getElementById('regBtnText');
+    const spinner = document.getElementById('regSpinner');
+    btn.disabled = true; btnText.textContent = 'Creating account...'; spinner.style.display = 'inline-block';
+
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: document.getElementById('fullName').value.trim(),
+          email: document.getElementById('email').value.trim(),
+          phone: document.getElementById('phone').value.trim(),
+          password,
+          country: document.getElementById('country').value,
+          referralCode: document.getElementById('referralCode').value.trim() || null,
+          recaptcha: typeof grecaptcha !== 'undefined' ? grecaptcha.getResponse() : 'bypass_dev'
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        showAlert('Account created successfully! Redirecting to your dashboard...', 'success');
+        setTimeout(() => window.location.href = '/dashboard/index.html', 1200);
+      } else {
+        showAlert(data.message || 'Registration failed. Please try again.');
+        btn.disabled = false; btnText.textContent = 'Create My Account'; spinner.style.display = 'none';
+      }
+    } catch (err) {
+      showAlert('Network error. Please check your connection.');
+      btn.disabled = false; btnText.textContent = 'Create My Account'; spinner.style.display = 'none';
+    }
+  }
+
+  if (localStorage.getItem('token')) window.location.href = '/dashboard/index.html';
+</script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sign In — AgricLife</title>
+  <link rel="icon" type="image/svg+xml" href="/assets/logo.svg"/>
+  <link rel="stylesheet" href="/css/style.css"/>
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+</head>
+<body>
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 40 40" fill="none" width="28" height="28">
+          <ellipse cx="20" cy="22" rx="7" ry="12" fill="#52b788" transform="rotate(-15,20,22)"/>
+          <path d="M20 30 Q14 22 18 10" stroke="#c8971a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <circle cx="16" cy="10" r="2.5" fill="#c8971a"/>
+        </svg>
+      </div>
+      <div style="font-size:1.3rem;font-weight:800;color:var(--primary);">Agric<span style="color:var(--accent)">Life</span></div>
+    </div>
+
+    <h2>Welcome Back</h2>
+    <p class="subtitle">Sign in to manage your investments and portfolio</p>
+
+    <div id="alertBox" style="display:none;"></div>
+
+    <form id="loginForm" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <div class="input-group">
+          <span class="input-icon">📧</span>
+          <input type="email" class="form-control" id="email" placeholder="you@example.com" required autocomplete="email"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" style="display:flex;justify-content:space-between;">
+          Password
+          <a href="#" style="color:var(--primary);font-weight:500;font-size:13px;">Forgot password?</a>
+        </label>
+        <div class="input-group">
+          <span class="input-icon">🔒</span>
+          <input type="password" class="form-control" id="password" placeholder="Enter your password" required autocomplete="current-password" style="padding-left:42px;padding-right:42px;"/>
+          <span onclick="togglePwd('password')" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;" id="eye1">👁️</span>
+        </div>
+      </div>
+
+      <!-- reCAPTCHA -->
+      <div class="form-group">
+        <div class="g-recaptcha" data-sitekey="YOUR_RECAPTCHA_SITE_KEY"></div>
+        <p style="font-size:11px;color:var(--text-muted);margin-top:6px;">Replace YOUR_RECAPTCHA_SITE_KEY with your actual key.</p>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width:100%;margin-top:4px;" id="loginBtn">
+        <span id="loginBtnText">Sign In to Dashboard</span>
+        <span id="loginSpinner" class="spinner" style="display:none;"></span>
+      </button>
+    </form>
+
+    <div class="auth-divider"><span>or</span></div>
+    <div class="auth-footer">
+      Don't have an account? <a href="/register.html">Create Account</a>
+    </div>
+    <div class="auth-footer" style="margin-top:12px;">
+      <a href="/" style="color:var(--text-muted);">← Back to Home</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  function togglePwd(id) {
+    const f = document.getElementById(id);
+    f.type = f.type === 'password' ? 'text' : 'password';
+  }
+
+  function showAlert(msg, type = 'danger') {
+    const box = document.getElementById('alertBox');
+    box.style.display = 'flex';
+    box.className = `alert alert-${type}`;
+    box.innerHTML = `<span>${type === 'success' ? '✅' : '❌'}</span> ${msg}`;
+  }
+
+  async function handleLogin(e) {
+    e.preventDefault();
+    const btn = document.getElementById('loginBtn');
+    const btnText = document.getElementById('loginBtnText');
+    const spinner = document.getElementById('loginSpinner');
+    btn.disabled = true; btnText.textContent = 'Signing in...'; spinner.style.display = 'inline-block';
+
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const recaptcha = grecaptcha?.getResponse() || 'bypass_for_dev';
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, recaptcha })
+      });
+      const data = await res.json();
+      if (data.success) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        showAlert('Login successful! Redirecting...', 'success');
+        setTimeout(() => {
+          window.location.href = data.user.role === 'admin' ? '/admin/index.html' : '/dashboard/index.html';
+        }, 800);
+      } else {
+        showAlert(data.message || 'Login failed. Please try again.');
+        btn.disabled = false; btnText.textContent = 'Sign In to Dashboard'; spinner.style.display = 'none';
+      }
+    } catch (err) {
+      showAlert('Network error. Please check your connection.');
+      btn.disabled = false; btnText.textContent = 'Sign In to Dashboard'; spinner.style.display = 'none';
+    }
+  }
+
+  // Redirect if already logged in
+  if (localStorage.getItem('token')) {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    window.location.href = user.role === 'admin' ? '/admin/index.html' : '/dashboard/index.html';
+  }
+</script>
+</body>
+</html>

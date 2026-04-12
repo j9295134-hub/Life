@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manage Stocks — Admin</title>
+  <link rel="stylesheet" href="/css/style.css"/>
+  <link rel="stylesheet" href="/css/dashboard.css"/>
+</head>
+<body>
+<div class="dash-layout">
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <aside class="sidebar admin-sidebar" id="sidebar"></aside>
+  <main class="dash-main">
+    <div class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="hamburger-dash" id="hamburgerDash"><span></span><span></span><span></span></div>
+        <div class="topbar-title">Manage Stocks</div>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Add New Stock</button>
+      </div>
+    </div>
+    <div class="dash-content">
+      <div class="panel">
+        <div class="panel-header"><h3>All Stock Portfolios</h3></div>
+        <div class="panel-body table-wrap" id="stocksTable">
+          <div style="text-align:center;padding:40px;color:var(--text-muted);">Loading...</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal-overlay" id="stockModal">
+  <div class="modal" style="max-width:600px;">
+    <div class="modal-header">
+      <h3 id="modalTitle">Add New Stock</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <form id="stockForm" onsubmit="saveStock(event)" enctype="multipart/form-data">
+      <input type="hidden" id="stockId"/>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Stock Name *</label>
+          <input type="text" class="form-control" id="sName" required placeholder="e.g. West African Goat"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category *</label>
+          <select class="form-control form-select" id="sCategory" required>
+            <option value="">— Select —</option>
+            <option value="Animals">Animals (Livestock)</option>
+            <option value="Food Farms">Food Farms (Crops)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description *</label>
+        <textarea class="form-control" id="sDesc" rows="3" required placeholder="Describe the investment portfolio..."></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Price (GHS) *</label>
+          <input type="number" class="form-control" id="sPrice" required min="1" step="0.01" placeholder="e.g. 200"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">ROI Percentage *</label>
+          <input type="number" class="form-control" id="sRoi" required min="0" step="0.01" placeholder="e.g. 15"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Duration *</label>
+          <input type="number" class="form-control" id="sDuration" required min="1" placeholder="e.g. 7"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Duration Unit *</label>
+          <select class="form-control form-select" id="sDurationUnit">
+            <option value="hours">Hours</option>
+            <option value="days" selected>Days</option>
+            <option value="weeks">Weeks</option>
+            <option value="months">Months</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Total Slots <span style="font-weight:400;color:var(--text-muted);">(optional)</span></label>
+          <input type="number" class="form-control" id="sSlots" min="1" placeholder="Leave blank for unlimited"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Risk Level *</label>
+          <select class="form-control form-select" id="sRisk">
+            <option value="Low">Low Risk</option>
+            <option value="Medium">Medium Risk</option>
+            <option value="High">High Risk</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Stock Image <span style="font-weight:400;color:var(--text-muted);">(optional, max 5MB)</span></label>
+        <input type="file" class="form-control" id="sImage" accept="image/*"/>
+      </div>
+      <div class="form-group">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+          <input type="checkbox" id="sFeatured" style="accent-color:var(--primary);width:16px;height:16px;"/>
+          <span>Feature this stock on homepage</span>
+        </label>
+      </div>
+      <!-- Live Preview -->
+      <div id="livePreview" style="background:var(--bg-light);border-radius:10px;padding:14px;margin-bottom:20px;font-size:13px;">
+        <strong>Investment Preview:</strong><br>
+        Price: <span id="prev-price">—</span> | Duration: <span id="prev-dur">—</span> | ROI: <span id="prev-roi">—</span>% | Payout: <span id="prev-payout" style="color:var(--primary);font-weight:700;">—</span>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button type="button" class="btn btn-outline" style="flex:1;" onclick="closeModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary" style="flex:2;" id="saveStockBtn">
+          <span id="saveStockText">Save Stock</span>
+          <span id="saveStockSpinner" class="spinner" style="display:none;"></span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="/js/auth-guard.js"></script>
+<script src="/js/admin-guard.js"></script>
+<script>
+  if (!requireAdmin()) throw '';
+  initSidebarToggle();
+
+  // Live preview
+  ['sPrice','sRoi','sDuration','sDurationUnit'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', updatePreview);
+  });
+  function updatePreview() {
+    const p = parseFloat(document.getElementById('sPrice').value)||0;
+    const r = parseFloat(document.getElementById('sRoi').value)||0;
+    const d = document.getElementById('sDuration').value||'—';
+    const du = document.getElementById('sDurationUnit').value||'days';
+    const payout = p + (p*r/100);
+    document.getElementById('prev-price').textContent = `GH₵${p}`;
+    document.getElementById('prev-dur').textContent = `${d} ${du}`;
+    document.getElementById('prev-roi').textContent = r;
+    document.getElementById('prev-payout').textContent = `GH₵${payout.toFixed(2)}`;
+  }
+
+  async function loadSidebar() {
+    const stats = await apiFetch('/api/admin/stats');
+    document.getElementById('sidebar').innerHTML = buildAdminSidebar(stats?.stats?.pendingDeposits, stats?.stats?.pendingWithdrawals);
+    setSidebarActive('nav-astocks');
+    initSidebarToggle();
+  }
+
+  async function loadStocks() {
+    const data = await apiFetch('/api/admin/all-stocks');
+    const table = document.getElementById('stocksTable');
+    if (!data?.success || !data.stocks.length) { table.innerHTML = `<div class="empty-state"><div class="empty-icon">📦</div><h3>No Stocks Yet</h3><p>Add your first investment portfolio.</p><button class="btn btn-primary" onclick="openAddModal()">+ Add Stock</button></div>`; return; }
+    table.innerHTML = `<table><thead><tr><th>Name</th><th>Category</th><th>Price</th><th>Duration</th><th>ROI</th><th>Payout</th><th>Slots</th><th>Status</th><th>Actions</th></tr></thead><tbody>` +
+      data.stocks.map(s => {
+        const payout = s.price + (s.price*s.roiPercentage/100);
+        return `<tr>
+          <td><div style="font-weight:600;">${s.name}</div><div style="font-size:11px;color:var(--text-muted);">${s.isFeatured?'⭐ Featured':''}</div></td>
+          <td>${statusBadge(s.category==='Animals'?'active':'warning')} <span style="display:none;">${s.category}</span><span style="font-size:12px;">${s.category}</span></td>
+          <td><strong>GH₵${s.price}</strong></td>
+          <td>${s.duration} ${s.durationUnit}</td>
+          <td style="color:var(--accent);font-weight:700;">${s.roiPercentage}%</td>
+          <td style="color:var(--primary);font-weight:700;">GH₵${payout.toFixed(2)}</td>
+          <td style="font-size:13px;">${s.totalSlots ? `${s.usedSlots}/${s.totalSlots}` : '∞'}</td>
+          <td>${s.isActive ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-danger">Inactive</span>'}</td>
+          <td><div class="action-btns">
+            <button class="action-btn action-btn-edit" onclick='editStock(${JSON.stringify(s).replace(/"/g,"&quot;")})'>Edit</button>
+            <button class="action-btn action-btn-delete" onclick="deleteStock('${s._id}')">Deactivate</button>
+          </div></td>
+        </tr>`;
+      }).join('') + `</tbody></table>`;
+  }
+
+  function openAddModal() {
+    document.getElementById('modalTitle').textContent = 'Add New Stock';
+    document.getElementById('stockId').value = '';
+    document.getElementById('stockForm').reset();
+    document.getElementById('stockModal').classList.add('active');
+    if (location.hash === '#add') history.replaceState(null,'','/admin/stocks.html');
+  }
+
+  function editStock(s) {
+    document.getElementById('modalTitle').textContent = 'Edit Stock';
+    document.getElementById('stockId').value = s._id;
+    document.getElementById('sName').value = s.name;
+    document.getElementById('sCategory').value = s.category;
+    document.getElementById('sDesc').value = s.description;
+    document.getElementById('sPrice').value = s.price;
+    document.getElementById('sRoi').value = s.roiPercentage;
+    document.getElementById('sDuration').value = s.duration;
+    document.getElementById('sDurationUnit').value = s.durationUnit;
+    document.getElementById('sSlots').value = s.totalSlots || '';
+    document.getElementById('sRisk').value = s.riskLevel || 'Low';
+    document.getElementById('sFeatured').checked = s.isFeatured;
+    updatePreview();
+    document.getElementById('stockModal').classList.add('active');
+  }
+
+  function closeModal() { document.getElementById('stockModal').classList.remove('active'); }
+
+  async function saveStock(e) {
+    e.preventDefault();
+    const id = document.getElementById('stockId').value;
+    const btn = document.getElementById('saveStockBtn'); btn.disabled = true;
+    document.getElementById('saveStockText').textContent = 'Saving...';
+    document.getElementById('saveStockSpinner').style.display = 'inline-block';
+
+    const form = new FormData();
+    form.append('name', document.getElementById('sName').value);
+    form.append('category', document.getElementById('sCategory').value);
+    form.append('description', document.getElementById('sDesc').value);
+    form.append('price', document.getElementById('sPrice').value);
+    form.append('roiPercentage', document.getElementById('sRoi').value);
+    form.append('duration', document.getElementById('sDuration').value);
+    form.append('durationUnit', document.getElementById('sDurationUnit').value);
+    form.append('totalSlots', document.getElementById('sSlots').value || '');
+    form.append('riskLevel', document.getElementById('sRisk').value);
+    form.append('isFeatured', document.getElementById('sFeatured').checked);
+    const imgFile = document.getElementById('sImage').files[0];
+    if (imgFile) form.append('image', imgFile);
+
+    const token = getToken();
+    const url = id ? `/api/stocks/${id}` : '/api/stocks';
+    const method = id ? 'PUT' : 'POST';
+    const res = await fetch(url, { method, headers: { Authorization: `Bearer ${token}` }, body: form });
+    const data = await res.json();
+    btn.disabled = false;
+    document.getElementById('saveStockText').textContent = 'Save Stock';
+    document.getElementById('saveStockSpinner').style.display = 'none';
+    if (data?.success) { closeModal(); showToast(data.message, 'success'); loadStocks(); }
+    else showToast(data?.message || 'Save failed.', 'error');
+  }
+
+  async function deleteStock(id) {
+    if (!confirm('Deactivate this stock? Users with active investments will not be affected.')) return;
+    const data = await apiFetch(`/api/stocks/${id}`, { method:'DELETE' });
+    if (data?.success) { showToast(data.message, 'success'); loadStocks(); }
+    else showToast(data?.message || 'Action failed.', 'error');
+  }
+
+  loadSidebar();
+  loadStocks();
+  if (location.hash === '#add') openAddModal();
+</script>
+</body>
+</html>

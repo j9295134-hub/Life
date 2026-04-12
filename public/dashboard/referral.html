@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Referral Program — AgricLife</title>
+  <link rel="stylesheet" href="/css/style.css"/>
+  <link rel="stylesheet" href="/css/dashboard.css"/>
+</head>
+<body>
+<div class="dash-layout">
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="dash-main">
+    <div class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="hamburger-dash" id="hamburgerDash"><span></span><span></span><span></span></div>
+        <div class="topbar-title">Referral Program</div>
+      </div>
+    </div>
+    <div class="dash-content">
+      <!-- Referral Card -->
+      <div class="referral-card">
+        <div style="font-size:3rem;margin-bottom:12px;">🤝</div>
+        <h2 style="margin-bottom:8px;">Invite Friends, Earn Rewards</h2>
+        <p style="opacity:0.85;font-size:14px;max-width:500px;margin:0 auto 20px;">Share your unique referral link. Every time a friend registers using your link, you earn <strong>GH₵10</strong> instantly credited to your wallet.</p>
+        <div class="referral-code-box">
+          <div>
+            <div style="font-size:11px;opacity:0.7;margin-bottom:4px;">Your Referral Code</div>
+            <div class="referral-code" id="refCode">—</div>
+          </div>
+          <button class="copy-btn" onclick="copyCode()">Copy Code</button>
+        </div>
+        <div style="font-size:11px;opacity:0.7;margin-bottom:6px;">Your Referral Link</div>
+        <div class="referral-link-box" id="refLink">—</div>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+          <button class="wallet-btn" onclick="copyLink()">📋 Copy Link</button>
+          <a class="wallet-btn" id="whatsappShare" href="#" target="_blank">📱 Share on WhatsApp</a>
+          <a class="wallet-btn" id="telegramShare" href="#" target="_blank">✈️ Share on Telegram</a>
+        </div>
+      </div>
+
+      <!-- Stats Row -->
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-card-icon icon-purple">👥</div><div class="stat-card-info"><div class="stat-label">Total Referrals</div><div class="stat-val" id="refCount">—</div></div></div>
+        <div class="stat-card"><div class="stat-card-icon icon-gold">💰</div><div class="stat-card-info"><div class="stat-label">Total Earned</div><div class="stat-val" id="refEarned">—</div></div></div>
+        <div class="stat-card"><div class="stat-card-icon icon-green">🎁</div><div class="stat-card-info"><div class="stat-label">Reward Per Referral</div><div class="stat-val">GH₵10</div></div></div>
+      </div>
+
+      <!-- How it Works -->
+      <div class="panel">
+        <div class="panel-header"><h3>How the Referral Program Works</h3></div>
+        <div class="panel-body">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:20px;">
+            <div style="text-align:center;padding:20px;background:var(--bg-light);border-radius:12px;">
+              <div style="font-size:2rem;margin-bottom:10px;">🔗</div>
+              <h4 style="margin-bottom:6px;font-size:0.95rem;">Share Your Link</h4>
+              <p style="font-size:13px;color:var(--text-muted);">Copy your unique referral link and share with friends, family, or on social media.</p>
+            </div>
+            <div style="text-align:center;padding:20px;background:var(--bg-light);border-radius:12px;">
+              <div style="font-size:2rem;margin-bottom:10px;">👤</div>
+              <h4 style="margin-bottom:6px;font-size:0.95rem;">Friend Registers</h4>
+              <p style="font-size:13px;color:var(--text-muted);">When your friend signs up using your referral link or code, they become your referral.</p>
+            </div>
+            <div style="text-align:center;padding:20px;background:var(--bg-light);border-radius:12px;">
+              <div style="font-size:2rem;margin-bottom:10px;">💰</div>
+              <h4 style="margin-bottom:6px;font-size:0.95rem;">Earn GH₵10</h4>
+              <p style="font-size:13px;color:var(--text-muted);">GH₵10 is instantly credited to your wallet for every successful referral registration.</p>
+            </div>
+            <div style="text-align:center;padding:20px;background:var(--bg-light);border-radius:12px;">
+              <div style="font-size:2rem;margin-bottom:10px;">♾️</div>
+              <h4 style="margin-bottom:6px;font-size:0.95rem;">No Limit</h4>
+              <p style="font-size:13px;color:var(--text-muted);">There is no cap on how many people you can refer. The more you refer, the more you earn.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Referred Users Table -->
+      <div class="panel">
+        <div class="panel-header"><h3>Your Referred Investors</h3></div>
+        <div class="panel-body table-wrap" id="referralsList">
+          <div style="text-align:center;padding:40px;color:var(--text-muted);">Loading...</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/js/auth-guard.js"></script>
+<script>
+  if (!requireAuth()) throw '';
+  const user = getUser();
+  const sym = user?.currencySymbol || 'GH₵';
+  document.getElementById('sidebar').innerHTML = buildSidebar(user);
+  setSidebarActive('nav-referral');
+  initSidebarToggle();
+
+  const code = user?.referralCode || '—';
+  const link = `${location.origin}/register.html?ref=${code}`;
+  document.getElementById('refCode').textContent = code;
+  document.getElementById('refLink').textContent = link;
+  document.getElementById('whatsappShare').href = `https://wa.me/?text=${encodeURIComponent('Join AgricLife and start investing in agriculture! Use my referral code '+code+' when registering: '+link)}`;
+  document.getElementById('telegramShare').href = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent('Join AgricLife - Invest in agriculture and earn returns! Use code: '+code)}`;
+
+  function copyCode() { navigator.clipboard.writeText(code); showToast('Referral code copied!', 'success'); }
+  function copyLink() { navigator.clipboard.writeText(link); showToast('Referral link copied!', 'success'); }
+
+  async function loadReferralStats() {
+    const stats = await apiFetch('/api/user/dashboard-stats');
+    if (stats?.success) {
+      document.getElementById('refCount').textContent = stats.stats.referralCount;
+      document.getElementById('refEarned').textContent = fmt(stats.stats.referralEarnings, sym);
+    }
+    const refs = await apiFetch('/api/user/referrals');
+    const panel = document.getElementById('referralsList');
+    if (!refs?.success || !refs.referrals.length) {
+      panel.innerHTML = `<div class="empty-state"><div class="empty-icon">👥</div><h3>No Referrals Yet</h3><p>Start sharing your referral link to earn GH₵10 per registration.</p></div>`;
+      return;
+    }
+    panel.innerHTML = `<table><thead><tr><th>#</th><th>Investor Name</th><th>Email</th><th>Joined</th><th>Bonus Earned</th></tr></thead><tbody>` +
+      refs.referrals.map((r, i) => `
+      <tr>
+        <td style="font-weight:600;color:var(--text-muted);">${i+1}</td>
+        <td><div class="td-user"><div class="td-avatar">${r.fullName[0].toUpperCase()}</div><div class="td-name">${r.fullName}</div></div></td>
+        <td style="font-size:13px;color:var(--text-muted);">${r.email}</td>
+        <td style="font-size:13px;">${new Date(r.createdAt).toLocaleDateString()}</td>
+        <td><span style="color:var(--primary);font-weight:700;">${sym}10.00</span></td>
+      </tr>`).join('') + `</tbody></table>`;
+  }
+
+  syncBalance();
+  loadReferralStats();
+</script>
+</body>
+</html>

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Settings — Admin</title>
+  <link rel="stylesheet" href="/css/style.css"/>
+  <link rel="stylesheet" href="/css/dashboard.css"/>
+</head>
+<body>
+<div class="dash-layout">
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <aside class="sidebar admin-sidebar" id="sidebar"></aside>
+  <main class="dash-main">
+    <div class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="hamburger-dash" id="hamburgerDash"><span></span><span></span><span></span></div>
+        <div class="topbar-title">Platform Settings</div>
+      </div>
+    </div>
+    <div class="dash-content">
+      <div id="settingsAlert" style="display:none;margin-bottom:16px;"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+
+        <!-- Deposit Accounts -->
+        <div class="panel" style="grid-column:1/-1;">
+          <div class="panel-header"><h3>💰 Deposit Account Details</h3><p style="font-size:13px;color:var(--text-muted);">These details are shown to users when they deposit.</p></div>
+          <div class="panel-body">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;" id="depositAccountsForm">
+              <!-- MTN MoMo -->
+              <div style="border:1px solid var(--border);border-radius:12px;padding:18px;">
+                <h4 style="margin-bottom:14px;display:flex;align-items:center;gap:8px;">📱 MTN MoMo</h4>
+                <div class="form-group"><label class="form-label">Account Name</label><input type="text" class="form-control" id="dep-mtn-name" placeholder="AgricLife Ltd"/></div>
+                <div class="form-group"><label class="form-label">MoMo Number</label><input type="tel" class="form-control" id="dep-mtn-number" placeholder="e.g. 0244000000"/></div>
+              </div>
+              <!-- Telecel -->
+              <div style="border:1px solid var(--border);border-radius:12px;padding:18px;">
+                <h4 style="margin-bottom:14px;display:flex;align-items:center;gap:8px;">📲 Telecel MoMo</h4>
+                <div class="form-group"><label class="form-label">Account Name</label><input type="text" class="form-control" id="dep-telecel-name" placeholder="AgricLife Ltd"/></div>
+                <div class="form-group"><label class="form-label">MoMo Number</label><input type="tel" class="form-control" id="dep-telecel-number" placeholder="e.g. 0207000000"/></div>
+              </div>
+              <!-- AirtelTigo -->
+              <div style="border:1px solid var(--border);border-radius:12px;padding:18px;">
+                <h4 style="margin-bottom:14px;display:flex;align-items:center;gap:8px;">📡 AirtelTigo MoMo</h4>
+                <div class="form-group"><label class="form-label">Account Name</label><input type="text" class="form-control" id="dep-airteltigo-name" placeholder="AgricLife Ltd"/></div>
+                <div class="form-group"><label class="form-label">MoMo Number</label><input type="tel" class="form-control" id="dep-airteltigo-number" placeholder="e.g. 0270000000"/></div>
+              </div>
+              <!-- Bank -->
+              <div style="border:1px solid var(--border);border-radius:12px;padding:18px;">
+                <h4 style="margin-bottom:14px;display:flex;align-items:center;gap:8px;">🏦 Bank Transfer</h4>
+                <div class="form-group"><label class="form-label">Account Name</label><input type="text" class="form-control" id="dep-bank-name" placeholder="AgricLife Ghana Ltd"/></div>
+                <div class="form-group"><label class="form-label">Account Number</label><input type="text" class="form-control" id="dep-bank-number" placeholder="Enter account number"/></div>
+                <div class="form-group"><label class="form-label">Bank Name</label><input type="text" class="form-control" id="dep-bank-bankname" placeholder="e.g. GCB Bank"/></div>
+              </div>
+            </div>
+            <button class="btn btn-primary" style="margin-top:16px;" onclick="saveDepositAccounts()">Save Deposit Accounts</button>
+          </div>
+        </div>
+
+        <!-- Support Contacts -->
+        <div class="panel">
+          <div class="panel-header"><h3>💬 Support Contacts</h3></div>
+          <div class="panel-body">
+            <div class="form-group">
+              <label class="form-label">WhatsApp Number / Link</label>
+              <input type="text" class="form-control" id="set-whatsapp" placeholder="e.g. +233244000000 or https://wa.me/..."/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Telegram Username / Link</label>
+              <input type="text" class="form-control" id="set-telegram" placeholder="e.g. @AgricLifeSupport or https://t.me/..."/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Support Email</label>
+              <input type="email" class="form-control" id="set-email" placeholder="support@agriclife.com"/>
+            </div>
+            <button class="btn btn-primary" onclick="saveSupportSettings()">Save Support Info</button>
+          </div>
+        </div>
+
+        <!-- Site Settings -->
+        <div class="panel">
+          <div class="panel-header"><h3>⚙️ Platform Settings</h3></div>
+          <div class="panel-body">
+            <div class="form-group">
+              <label class="form-label">Minimum Deposit Amount (GHS)</label>
+              <input type="number" class="form-control" id="set-minDep" value="40" min="1"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Minimum Withdrawal Amount (GHS)</label>
+              <input type="number" class="form-control" id="set-minWit" value="50" min="1"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Referral Bonus Amount (GHS)</label>
+              <input type="number" class="form-control" id="set-refBonus" value="10" min="0"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Site Maintenance Mode</label>
+              <select class="form-control form-select" id="set-maintenance">
+                <option value="false">Off (Site is Live)</option>
+                <option value="true">On (Maintenance Mode)</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" onclick="savePlatformSettings()">Save Settings</button>
+          </div>
+        </div>
+
+        <!-- Admin Password -->
+        <div class="panel" style="grid-column:1/-1;">
+          <div class="panel-header"><h3>🔒 Change Admin Password</h3></div>
+          <div class="panel-body">
+            <div id="pwdSettingsAlert" style="display:none;margin-bottom:16px;"></div>
+            <div style="max-width:400px;">
+              <div class="form-group"><label class="form-label">Current Password</label><input type="password" class="form-control" id="sCurrPwd" placeholder="Current password"/></div>
+              <div class="form-group"><label class="form-label">New Password</label><input type="password" class="form-control" id="sNewPwd" placeholder="Min. 8 characters"/></div>
+              <div class="form-group"><label class="form-label">Confirm New Password</label><input type="password" class="form-control" id="sConPwd" placeholder="Repeat new password"/></div>
+              <button class="btn btn-outline" onclick="changeAdminPassword()">Update Password</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/js/auth-guard.js"></script>
+<script src="/js/admin-guard.js"></script>
+<script>
+  if (!requireAdmin()) throw '';
+  initSidebarToggle();
+
+  async function loadSidebar() {
+    const stats = await apiFetch('/api/admin/stats');
+    document.getElementById('sidebar').innerHTML = buildAdminSidebar(stats?.stats?.pendingDeposits, stats?.stats?.pendingWithdrawals);
+    setSidebarActive('nav-asettings');
+    initSidebarToggle();
+  }
+
+  async function loadSettings() {
+    const data = await apiFetch('/api/admin/settings');
+    if (!data?.success) return;
+    const s = data.settings;
+    if (s.deposit_accounts) {
+      const accs = s.deposit_accounts;
+      accs.forEach(a => {
+        if (a.method === 'mtn_momo') { document.getElementById('dep-mtn-name').value = a.accountName||''; document.getElementById('dep-mtn-number').value = a.accountNumber||''; }
+        if (a.method === 'telecel_momo') { document.getElementById('dep-telecel-name').value = a.accountName||''; document.getElementById('dep-telecel-number').value = a.accountNumber||''; }
+        if (a.method === 'airteltigo_momo') { document.getElementById('dep-airteltigo-name').value = a.accountName||''; document.getElementById('dep-airteltigo-number').value = a.accountNumber||''; }
+        if (a.method === 'bank') { document.getElementById('dep-bank-name').value = a.accountName||''; document.getElementById('dep-bank-number').value = a.accountNumber||''; document.getElementById('dep-bank-bankname').value = a.bankName||''; }
+      });
+    }
+    if (s.whatsapp) document.getElementById('set-whatsapp').value = s.whatsapp;
+    if (s.telegram) document.getElementById('set-telegram').value = s.telegram;
+    if (s.email) document.getElementById('set-email').value = s.email;
+    if (s.min_deposit) document.getElementById('set-minDep').value = s.min_deposit;
+    if (s.min_withdrawal) document.getElementById('set-minWit').value = s.min_withdrawal;
+    if (s.referral_bonus) document.getElementById('set-refBonus').value = s.referral_bonus;
+    if (s.maintenance !== undefined) document.getElementById('set-maintenance').value = s.maintenance;
+  }
+
+  async function saveDepositAccounts() {
+    const accounts = [
+      { method:'mtn_momo', accountName: document.getElementById('dep-mtn-name').value, accountNumber: document.getElementById('dep-mtn-number').value, network:'MTN' },
+      { method:'telecel_momo', accountName: document.getElementById('dep-telecel-name').value, accountNumber: document.getElementById('dep-telecel-number').value, network:'Telecel' },
+      { method:'airteltigo_momo', accountName: document.getElementById('dep-airteltigo-name').value, accountNumber: document.getElementById('dep-airteltigo-number').value, network:'AirtelTigo' },
+      { method:'bank', accountName: document.getElementById('dep-bank-name').value, accountNumber: document.getElementById('dep-bank-number').value, bankName: document.getElementById('dep-bank-bankname').value }
+    ];
+    const data = await apiFetch('/api/admin/settings', { method:'PUT', body: JSON.stringify({ deposit_accounts: accounts }) });
+    if (data?.success) showToast('Deposit accounts saved!', 'success'); else showToast('Save failed.', 'error');
+  }
+
+  async function saveSupportSettings() {
+    const data = await apiFetch('/api/admin/settings', { method:'PUT', body: JSON.stringify({
+      whatsapp: document.getElementById('set-whatsapp').value,
+      telegram: document.getElementById('set-telegram').value,
+      email: document.getElementById('set-email').value
+    })});
+    if (data?.success) showToast('Support info saved!', 'success'); else showToast('Save failed.', 'error');
+  }
+
+  async function savePlatformSettings() {
+    const data = await apiFetch('/api/admin/settings', { method:'PUT', body: JSON.stringify({
+      min_deposit: document.getElementById('set-minDep').value,
+      min_withdrawal: document.getElementById('set-minWit').value,
+      referral_bonus: document.getElementById('set-refBonus').value,
+      maintenance: document.getElementById('set-maintenance').value
+    })});
+    if (data?.success) showToast('Platform settings saved!', 'success'); else showToast('Save failed.', 'error');
+  }
+
+  async function changeAdminPassword() {
+    const curr = document.getElementById('sCurrPwd').value;
+    const newP = document.getElementById('sNewPwd').value;
+    const con = document.getElementById('sConPwd').value;
+    if (newP !== con) { showAlert('pwdSettingsAlert','Passwords do not match.','danger'); return; }
+    if (newP.length < 8) { showAlert('pwdSettingsAlert','Password must be at least 8 characters.','danger'); return; }
+    const data = await apiFetch('/api/user/change-password', { method:'PUT', body: JSON.stringify({ currentPassword: curr, newPassword: newP }) });
+    if (data?.success) { showToast('Password updated!', 'success'); document.getElementById('sCurrPwd').value=''; document.getElementById('sNewPwd').value=''; document.getElementById('sConPwd').value=''; }
+    else showAlert('pwdSettingsAlert', data?.message||'Failed.', 'danger');
+  }
+
+  function showAlert(id, msg, type) {
+    const el = document.getElementById(id);
+    el.style.display='flex'; el.className=`alert alert-${type}`;
+    el.innerHTML=`<span>${type==='success'?'✅':'❌'}</span> ${msg}`;
+  }
+
+  loadSidebar();
+  loadSettings();
+</script>
+</body>
+</html>

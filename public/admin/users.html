@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manage Users — Admin</title>
+  <link rel="stylesheet" href="/css/style.css"/>
+  <link rel="stylesheet" href="/css/dashboard.css"/>
+</head>
+<body>
+<div class="dash-layout">
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <aside class="sidebar admin-sidebar" id="sidebar"></aside>
+  <main class="dash-main">
+    <div class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="hamburger-dash" id="hamburgerDash"><span></span><span></span><span></span></div>
+        <div class="topbar-title">Manage Users</div>
+      </div>
+    </div>
+    <div class="dash-content">
+      <div class="filter-bar">
+        <input type="text" class="form-control" id="searchInput" placeholder="🔍 Search by name or email..." oninput="filterUsers()" style="max-width:300px;"/>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><h3>All Investors</h3><span id="userCount" class="badge badge-primary">0 Users</span></div>
+        <div class="panel-body table-wrap" id="usersTable">
+          <div style="text-align:center;padding:40px;color:var(--text-muted);">Loading...</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- User Action Modal -->
+<div class="modal-overlay" id="userModal">
+  <div class="modal" style="max-width:440px;">
+    <div class="modal-header"><h3 id="uModalTitle">User Action</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div id="uModalBody"></div>
+  </div>
+</div>
+
+<script src="/js/auth-guard.js"></script>
+<script src="/js/admin-guard.js"></script>
+<script>
+  if (!requireAdmin()) throw '';
+  initSidebarToggle();
+  let allUsers = [], selectedUser = null;
+
+  async function loadSidebar() {
+    const stats = await apiFetch('/api/admin/stats');
+    document.getElementById('sidebar').innerHTML = buildAdminSidebar(stats?.stats?.pendingDeposits, stats?.stats?.pendingWithdrawals);
+    setSidebarActive('nav-ausers');
+    initSidebarToggle();
+  }
+
+  async function loadUsers() {
+    const data = await apiFetch('/api/admin/users');
+    allUsers = data?.users || [];
+    document.getElementById('userCount').textContent = `${allUsers.length} Users`;
+    renderUsers(allUsers);
+  }
+
+  function filterUsers() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    renderUsers(allUsers.filter(u => u.fullName.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)));
+  }
+
+  function renderUsers(users) {
+    const table = document.getElementById('usersTable');
+    if (!users.length) { table.innerHTML = `<div class="empty-state"><div class="empty-icon">👥</div><h3>No Users Found</h3></div>`; return; }
+    table.innerHTML = `<table><thead><tr><th>User</th><th>Country</th><th>Wallet</th><th>Invested</th><th>Referrals</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead><tbody>` +
+      users.map(u => `
+      <tr>
+        <td><div class="td-user"><div class="td-avatar">${u.fullName[0].toUpperCase()}</div><div><div class="td-name">${u.fullName}</div><div class="td-email">${u.email}</div></div></div></td>
+        <td style="font-size:13px;">${u.country||'—'}</td>
+        <td><strong style="color:var(--primary);">${u.currencySymbol||'GH₵'}${(u.walletBalance||0).toFixed(2)}</strong></td>
+        <td style="font-size:13px;">${u.currencySymbol||'GH₵'}${(u.totalInvested||0).toFixed(2)}</td>
+        <td style="font-size:13px;">${u.referralCount||0}</td>
+        <td style="font-size:12px;">${new Date(u.createdAt).toLocaleDateString()}</td>
+        <td>${u.isSuspended ? '<span class="badge badge-danger">Suspended</span>' : '<span class="badge badge-success">Active</span>'}</td>
+        <td>
+          <div class="action-btns">
+            <button class="action-btn action-btn-edit" onclick="openWalletAction('${u._id}','${u.fullName}','${u.currencySymbol||'GH₵'}')">Wallet</button>
+            <button class="action-btn ${u.isSuspended?'action-btn-approve':'action-btn-reject'}" onclick="toggleSuspend('${u._id}','${u.fullName}',${u.isSuspended})">${u.isSuspended?'Unsuspend':'Suspend'}</button>
+          </div>
+        </td>
+      </tr>`).join('') + `</tbody></table>`;
+  }
+
+  function openWalletAction(id, name, sym) {
+    selectedUser = { id, name, sym };
+    document.getElementById('uModalTitle').textContent = `Wallet — ${name}`;
+    document.getElementById('uModalBody').innerHTML = `
+      <div class="form-group">
+        <label class="form-label">Action</label>
+        <select class="form-control form-select" id="walletAction">
+          <option value="credit">Credit (Add funds)</option>
+          <option value="debit">Debit (Remove funds)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Amount (${sym})</label>
+        <input type="number" class="form-control" id="walletAmount" placeholder="Enter amount" min="0.01" step="0.01" required/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Note (optional)</label>
+        <input type="text" class="form-control" id="walletNote" placeholder="Reason for adjustment"/>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-outline" style="flex:1;" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" style="flex:2;" onclick="applyWalletAction()">Apply</button>
+      </div>`;
+    document.getElementById('userModal').classList.add('active');
+  }
+
+  async function applyWalletAction() {
+    const { id } = selectedUser;
+    const action = document.getElementById('walletAction').value;
+    const amount = document.getElementById('walletAmount').value;
+    const note = document.getElementById('walletNote').value;
+    if (!amount || amount <= 0) { showToast('Enter a valid amount.', 'error'); return; }
+    const data = await apiFetch(`/api/admin/users/${id}/wallet`, { method:'PUT', body: JSON.stringify({ amount, action, note }) });
+    closeModal();
+    if (data?.success) { showToast(data.message, 'success'); loadUsers(); }
+    else showToast(data?.message || 'Action failed.', 'error');
+  }
+
+  async function toggleSuspend(id, name, isSuspended) {
+    const action = isSuspended ? 'reactivate' : 'suspend';
+    if (!confirm(`${action.charAt(0).toUpperCase()+action.slice(1)} ${name}?`)) return;
+    const data = await apiFetch(`/api/admin/users/${id}/suspend`, { method:'PUT' });
+    if (data?.success) { showToast(data.message, 'success'); loadUsers(); }
+    else showToast(data?.message || 'Action failed.', 'error');
+  }
+
+  function closeModal() { document.getElementById('userModal').classList.remove('active'); }
+
+  loadSidebar();
+  loadUsers();
+</script>
+</body>
+</html>

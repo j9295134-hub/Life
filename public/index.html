@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AgricLife — Invest in Agriculture, Grow Your Wealth</title>
+  <meta name="description" content="AgricLife is a trusted agricultural investment platform. Invest in livestock and crop portfolios and earn guaranteed returns."/>
+  <link rel="icon" type="image/svg+xml" href="/assets/logo.svg"/>
+  <link rel="stylesheet" href="/css/style.css"/>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar" id="navbar">
+  <a href="/" class="navbar-brand">
+    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="20" cy="22" rx="7" ry="12" fill="#52b788" transform="rotate(-15,20,22)"/>
+      <ellipse cx="20" cy="22" rx="5" ry="10" fill="#2d6a4f" transform="rotate(-15,20,22)" opacity="0.5"/>
+      <path d="M20 30 Q14 22 18 10" stroke="#c8971a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <circle cx="16" cy="10" r="2.5" fill="#c8971a"/>
+    </svg>
+    Agric<span>Life</span>
+  </a>
+  <div class="nav-links">
+    <a href="/" class="active">Home</a>
+    <a href="/stocks.html">Stocks</a>
+    <a href="/about.html">About Us</a>
+    <a href="/terms.html">Terms</a>
+  </div>
+  <div class="nav-cta">
+    <a href="/login.html" class="btn btn-outline btn-sm">Sign In</a>
+    <a href="/register.html" class="btn btn-primary btn-sm">Get Started</a>
+  </div>
+  <div class="hamburger" id="hamburger" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+<div class="nav-mobile" id="navMobile">
+  <a href="/">Home</a>
+  <a href="/stocks.html">Stocks</a>
+  <a href="/about.html">About Us</a>
+  <a href="/terms.html">Terms</a>
+  <a href="/login.html">Sign In</a>
+  <a href="/register.html" class="btn btn-primary btn-sm" style="margin-top:8px;">Get Started</a>
+</div>
+
+<!-- LIVE ACTIVITY TICKER -->
+<div id="activityFeed" style="background:var(--primary-dark);border-bottom:2px solid rgba(255,255,255,0.06);">
+  <div style="display:flex;align-items:stretch;max-width:100%;">
+    <div style="background:var(--accent);padding:0 14px;display:flex;align-items:center;gap:6px;flex-shrink:0;">
+      <span style="width:7px;height:7px;background:#fff;border-radius:50%;display:inline-block;animation:livePulse 1.4s ease-in-out infinite;flex-shrink:0;"></span>
+      <span style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#fff;white-space:nowrap;">Live</span>
+    </div>
+    <div style="flex:1;overflow:hidden;padding:0 16px;" id="feedRows"></div>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">🌱 Trusted Agricultural Investment Platform</div>
+    <h1>Invest in Agriculture,<br><span style="color:var(--accent-light)">Grow Your Wealth</span></h1>
+    <p>Join thousands of investors earning consistent returns from livestock and crop portfolios managed by agricultural experts. Start with as little as GH₵50.</p>
+    <div class="hero-actions">
+      <a href="/register.html" class="btn btn-white btn-lg">Start Investing Today</a>
+      <a href="/stocks.html" class="btn btn-outline btn-lg" style="border-color:rgba(255,255,255,0.5);color:#fff;">Browse Stocks</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="value" id="heroUsers">2,400+</div><div class="label">Active Investors</div></div>
+      <div class="hero-stat"><div class="value">15+</div><div class="label">Stock Portfolios</div></div>
+      <div class="hero-stat"><div class="value">98%</div><div class="label">Payout Rate</div></div>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div style="font-size:12rem;opacity:0.15;line-height:1;">🌾</div>
+  </div>
+</section>
+
+
+<!-- FEATURED STOCKS -->
+<section class="section">
+  <div class="section-header">
+    <div class="section-tag">Investment Portfolios</div>
+    <h2>Explore Our Agricultural Stocks</h2>
+    <p>Choose from a carefully curated selection of livestock and crop portfolios, each with clearly defined returns and durations.</p>
+  </div>
+  <div class="stocks-grid" id="featuredStocks">
+    <!-- Loaded dynamically -->
+    <div class="stock-card skeleton">
+      <div class="stock-card-img" style="background:var(--bg-light);"></div>
+      <div class="stock-card-body"><div style="height:14px;background:var(--bg-light);border-radius:6px;margin-bottom:10px;"></div><div style="height:10px;background:var(--bg-light);border-radius:6px;width:60%;"></div></div>
+    </div>
+    <div class="stock-card skeleton">
+      <div class="stock-card-img" style="background:var(--bg-light);"></div>
+      <div class="stock-card-body"><div style="height:14px;background:var(--bg-light);border-radius:6px;margin-bottom:10px;"></div><div style="height:10px;background:var(--bg-light);border-radius:6px;width:60%;"></div></div>
+    </div>
+    <div class="stock-card skeleton">
+      <div class="stock-card-img" style="background:var(--bg-light);"></div>
+      <div class="stock-card-body"><div style="height:14px;background:var(--bg-light);border-radius:6px;margin-bottom:10px;"></div><div style="height:10px;background:var(--bg-light);border-radius:6px;width:60%;"></div></div>
+    </div>
+  </div>
+  <div style="text-align:center;margin-top:36px;">
+    <a href="/stocks.html" class="btn btn-primary btn-lg">View All Portfolios</a>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section section-alt">
+  <div class="section-header">
+    <div class="section-tag">Simple Process</div>
+    <h2>How AgricLife Works</h2>
+    <p>Getting started is straightforward. Follow these four simple steps to begin earning from agriculture.</p>
+  </div>
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-number">1</div>
+      <div class="step-icon">👤</div>
+      <h3>Create Your Account</h3>
+      <p>Register in minutes with your basic details. Your account is secured and verified immediately upon sign-up.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-number">2</div>
+      <div class="step-icon">💰</div>
+      <h3>Fund Your Wallet</h3>
+      <p>Deposit funds securely via Mobile Money (MTN, Telecel, AirtelTigo) or any Ghanaian bank. Minimum deposit is GH₵40.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-number">3</div>
+      <div class="step-icon">🐄</div>
+      <h3>Select a Portfolio</h3>
+      <p>Browse our verified livestock and crop portfolios. Choose by risk level, duration, and expected returns that suit your goals.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-number">4</div>
+      <div class="step-icon">📈</div>
+      <h3>Earn Your Returns</h3>
+      <p>Once your investment matures, your principal plus earnings are automatically credited to your wallet. Withdraw anytime.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORIES -->
+<section class="section">
+  <div class="section-header">
+    <div class="section-tag">Portfolio Categories</div>
+    <h2>Diverse Agricultural Investments</h2>
+    <p>We offer two main investment categories — each with multiple options and varying risk and return profiles.</p>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:800px;margin:0 auto;">
+    <div style="background:linear-gradient(135deg,#1e6b3c,#2d8a50);color:#fff;border-radius:20px;padding:36px 28px;text-align:center;cursor:pointer;" onclick="location.href='/stocks.html?category=Animals'">
+      <div style="font-size:4rem;margin-bottom:16px;">🐐</div>
+      <h3 style="font-size:1.4rem;margin-bottom:10px;">Livestock Portfolios</h3>
+      <p style="opacity:0.85;font-size:14px;margin-bottom:20px;">Invest in goats, sheep, cows, rabbits and more. Our expert farmers manage and grow your livestock for optimum returns.</p>
+      <span class="btn btn-white btn-sm">Explore Animals →</span>
+    </div>
+    <div style="background:linear-gradient(135deg,#c8971a,#a87815);color:#fff;border-radius:20px;padding:36px 28px;text-align:center;cursor:pointer;" onclick="location.href='/stocks.html?category=Food+Farms'">
+      <div style="font-size:4rem;margin-bottom:16px;">🌾</div>
+      <h3 style="font-size:1.4rem;margin-bottom:10px;">Crop Farm Portfolios</h3>
+      <p style="opacity:0.85;font-size:14px;margin-bottom:20px;">Invest in rice, millet, wheat, maize and other crops. Each acre portfolio is managed by certified agronomists.</p>
+      <span class="btn btn-white btn-sm">Explore Farms →</span>
+    </div>
+  </div>
+</section>
+
+<!-- STATS BANNER -->
+<div class="stats-banner">
+  <div class="stats-grid">
+    <div class="stat-item"><div class="stat-value">GH₵2M+</div><div class="stat-label">Total Investments</div></div>
+    <div class="stat-item"><div class="stat-value">2,400+</div><div class="stat-label">Active Investors</div></div>
+    <div class="stat-item"><div class="stat-value">15+</div><div class="stat-label">Portfolio Types</div></div>
+    <div class="stat-item"><div class="stat-value">98%</div><div class="stat-label">On-time Payouts</div></div>
+  </div>
+</div>
+
+<!-- TESTIMONIALS -->
+<section class="section section-alt">
+  <div class="section-header">
+    <div class="section-tag">Investor Stories</div>
+    <h2>What Our Investors Say</h2>
+    <p>Thousands of people across Africa trust AgricLife to grow their wealth through sustainable agricultural investment.</p>
+  </div>
+  <div class="testimonials-grid">
+    <div class="testimonial-card">
+      <div class="testimonial-stars">★★★★★</div>
+      <p class="testimonial-text">"I invested in the goat portfolio 3 months ago and received my returns plus profit right on schedule. AgricLife is genuinely trustworthy."</p>
+      <div class="testimonial-author">
+        <div class="author-avatar">AK</div>
+        <div><div class="author-name">Abena Kyei</div><div class="author-location">Accra, Ghana</div></div>
+      </div>
+    </div>
+    <div class="testimonial-card">
+      <div class="testimonial-stars">★★★★★</div>
+      <p class="testimonial-text">"The rice farm portfolio gave me 20% returns in just 90 days. The process is transparent and the team is very responsive to questions."</p>
+      <div class="testimonial-author">
+        <div class="author-avatar">KO</div>
+        <div><div class="author-name">Kwame Ofori</div><div class="author-location">Kumasi, Ghana</div></div>
+      </div>
+    </div>
+    <div class="testimonial-card">
+      <div class="testimonial-stars">★★★★★</div>
+      <p class="testimonial-text">"I referred my colleagues and earned GH₵10 per referral. On top of that, my maize investment is performing excellently. Highly recommend!"</p>
+      <div class="testimonial-author">
+        <div class="author-avatar">EA</div>
+        <div><div class="author-name">Esi Asante</div><div class="author-location">Takoradi, Ghana</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY AGRICLIFE -->
+<section class="section">
+  <div class="section-header">
+    <div class="section-tag">Why Choose Us</div>
+    <h2>Built for Transparency & Trust</h2>
+    <p>We are committed to providing a secure, transparent, and profitable investment experience for every investor.</p>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px;">
+    <div style="padding:24px;border:1px solid var(--border);border-radius:var(--radius);text-align:center;">
+      <div style="font-size:2.2rem;margin-bottom:12px;">🔒</div>
+      <h4 style="margin-bottom:8px;">Secure Platform</h4>
+      <p style="font-size:13px;color:var(--text-muted);">Bank-grade security protects your account and investment data at all times.</p>
+    </div>
+    <div style="padding:24px;border:1px solid var(--border);border-radius:var(--radius);text-align:center;">
+      <div style="font-size:2.2rem;margin-bottom:12px;">📊</div>
+      <h4 style="margin-bottom:8px;">Transparent Returns</h4>
+      <p style="font-size:13px;color:var(--text-muted);">Every portfolio clearly states the duration, ROI, and total payout before you invest.</p>
+    </div>
+    <div style="padding:24px;border:1px solid var(--border);border-radius:var(--radius);text-align:center;">
+      <div style="font-size:2.2rem;margin-bottom:12px;">🌍</div>
+      <h4 style="margin-bottom:8px;">Expert Management</h4>
+      <p style="font-size:13px;color:var(--text-muted);">Certified agronomists and livestock experts manage your portfolios for maximum yield.</p>
+    </div>
+    <div style="padding:24px;border:1px solid var(--border);border-radius:var(--radius);text-align:center;">
+      <div style="font-size:2.2rem;margin-bottom:12px;">⚡</div>
+      <h4 style="margin-bottom:8px;">Fast Payouts</h4>
+      <p style="font-size:13px;color:var(--text-muted);">Earnings are automatically credited to your wallet as soon as your investment matures.</p>
+    </div>
+    <div style="padding:24px;border:1px solid var(--border);border-radius:var(--radius);text-align:center;">
+      <div style="font-size:2.2rem;margin-bottom:12px;">💬</div>
+      <h4 style="margin-bottom:8px;">24/7 Support</h4>
+      <p style="font-size:13px;color:var(--text-muted);">Our support team is available via WhatsApp, email, and Telegram around the clock.</p>
+    </div>
+    <div style="padding:24px;border:1px solid var(--border);border-radius:var(--radius);text-align:center;">
+      <div style="font-size:2.2rem;margin-bottom:12px;">🤝</div>
+      <h4 style="margin-bottom:8px;">Referral Rewards</h4>
+      <p style="font-size:13px;color:var(--text-muted);">Earn GH₵10 for every investor you refer to the platform — instantly credited.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-banner">
+  <h2>Ready to Grow Your Wealth?</h2>
+  <p>Join over 2,400 investors already earning consistent returns through AgricLife. Your agricultural investment journey starts today.</p>
+  <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+    <a href="/register.html" class="btn btn-white btn-lg">Create Free Account</a>
+    <a href="/stocks.html" class="btn btn-outline btn-lg" style="border-color:rgba(255,255,255,0.5);color:#fff;">Browse Portfolios</a>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="brand">
+        <svg viewBox="0 0 40 40" fill="none" width="28" height="28">
+          <ellipse cx="20" cy="22" rx="7" ry="12" fill="#52b788" transform="rotate(-15,20,22)"/>
+          <path d="M20 30 Q14 22 18 10" stroke="#c8971a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <circle cx="16" cy="10" r="2.5" fill="#c8971a"/>
+        </svg>
+        Agric<span style="color:var(--accent-light)">Life</span>
+      </div>
+      <p>A trusted agricultural investment platform empowering investors to earn sustainable returns from livestock and crop portfolios managed by certified experts.</p>
+      <div class="footer-social">
+        <a href="#" class="social-btn" title="WhatsApp">📱</a>
+        <a href="#" class="social-btn" title="Telegram">✈️</a>
+        <a href="#" class="social-btn" title="Email">📧</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Platform</h4>
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/stocks.html">Stocks</a></li>
+        <li><a href="/about.html">About Us</a></li>
+        <li><a href="/register.html">Get Started</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Legal</h4>
+      <ul>
+        <li><a href="/terms.html">Terms & Conditions</a></li>
+        <li><a href="/privacy.html">Privacy Policy</a></li>
+        <li><a href="/terms.html#risk">Risk Disclosure</a></li>
+        <li><a href="/terms.html#refund">Refund Policy</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Support</h4>
+      <ul>
+        <li><a href="#">WhatsApp</a></li>
+        <li><a href="#">Telegram</a></li>
+        <li><a href="#">Email Us</a></li>
+        <li><a href="/dashboard/support.html">Help Center</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>&copy; 2025 AgricLife. All rights reserved.</span>
+    <span>Registered Agricultural Investment Platform</span>
+  </div>
+</footer>
+
+<style>
+@keyframes livePulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(1.6)} }
+@keyframes tickerSlide { from{opacity:0;transform:translateY(-100%)} to{opacity:1;transform:translateY(0)} }
+
+#feedRows {
+  display:flex; flex-direction:column;
+  height: 54px; /* exactly 2 rows */
+  overflow:hidden;
+  justify-content:center;
+  gap:2px;
+}
+.feed-row {
+  display:flex; align-items:center; gap:8px;
+  padding:3px 0;
+  animation: tickerSlide 0.35s ease;
+  min-width:0; flex-shrink:0; height:24px;
+}
+.feed-dot {
+  width:6px; height:6px; border-radius:50%; flex-shrink:0;
+}
+.feed-row-text {
+  font-size:12px; color:rgba(255,255,255,0.85);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  flex:1; min-width:0;
+}
+.feed-row-text strong { color:#fff; }
+.feed-row-amount {
+  font-size:12px; font-weight:800; flex-shrink:0; margin-left:6px;
+}
+.feed-row-time {
+  font-size:10px; color:rgba(255,255,255,0.4);
+  flex-shrink:0; margin-left:6px; white-space:nowrap;
+}
+.feed-divider {
+  width:1px; background:rgba(255,255,255,0.12);
+  height:16px; flex-shrink:0; margin:0 4px;
+}
+</style>
+
+<script>
+  function toggleMenu() {
+    document.getElementById('navMobile').classList.toggle('open');
+  }
+
+  // Load featured stocks
+  async function loadFeaturedStocks() {
+    try {
+      const res = await fetch('/api/stocks?featured=true');
+      const data = await res.json();
+      const grid = document.getElementById('featuredStocks');
+      if (!data.stocks || data.stocks.length === 0) {
+        grid.innerHTML = '<p style="color:var(--text-muted);text-align:center;grid-column:1/-1;">No featured stocks available yet.</p>';
+        return;
+      }
+      const icons = { Animals: '🐄', 'Food Farms': '🌾' };
+      grid.innerHTML = data.stocks.slice(0, 6).map(s => {
+        const totalReturn = s.price + (s.price * s.roiPercentage / 100);
+        return `
+        <div class="stock-card">
+          <div class="stock-card-img">
+            ${s.image ? `<img src="${s.image}" alt="${s.name}" loading="lazy"/>` : `<div style="width:100%;height:100%;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;font-size:5rem;">${icons[s.category] || '🌱'}</div>`}
+            <span class="stock-card-category">${s.category}</span>
+            <span class="stock-card-risk risk-${s.riskLevel?.toLowerCase() || 'low'}">${s.riskLevel || 'Low'} Risk</span>
+          </div>
+          <div class="stock-card-body">
+            <h3>${s.name}</h3>
+            <p>${s.description.slice(0, 90)}${s.description.length > 90 ? '...' : ''}</p>
+            <div class="stock-meta">
+              <div class="stock-meta-item"><div class="meta-label">Investment</div><div class="meta-value">GH₵${s.price.toLocaleString()}</div></div>
+              <div class="stock-meta-item"><div class="meta-label">Duration</div><div class="meta-value">${s.duration} ${s.durationUnit}</div></div>
+              <div class="stock-meta-item"><div class="meta-label">ROI</div><div class="meta-value" style="color:var(--accent)">${s.roiPercentage}%</div></div>
+              <div class="stock-meta-item"><div class="meta-label">Category</div><div class="meta-value" style="font-size:12px">${s.category}</div></div>
+            </div>
+            <div class="stock-return">
+              <div class="return-label">Total Payout at Maturity</div>
+              <div class="return-value">GH₵${totalReturn.toFixed(2)}</div>
+            </div>
+            <a href="/register.html" class="btn btn-primary" style="width:100%">Invest Now</a>
+          </div>
+        </div>`;
+      }).join('');
+    } catch (e) {
+      // silently fail — stocks not critical for homepage
+    }
+  }
+  loadFeaturedStocks();
+
+  // ---- Live Activity Ticker (thin 2-row strip) ----
+  const names = [
+    'James R.','Sofia M.','David K.','Amara S.','Carlos B.','Emily T.','Liam O.','Fatima A.',
+    'Noah P.','Grace N.','Michael D.','Aisha K.','Samuel F.','Linda G.','Peter J.','Rachel C.',
+    'Ahmed H.','Olivia W.','Daniel I.','Priya V.','Kevin L.','Maria E.','Isaac T.','Chloe B.',
+    'Omar Z.','Hannah Q.','Felix U.','Nina R.','Victor A.','Sandra O.','Lucas M.','Zara T.',
+    'Henry B.','Layla K.','Ryan S.','Jasmine N.','Ethan C.','Nadia R.','Marcus L.','Stella P.',
+    'Julian F.','Leila H.','Patrick O.','Ingrid A.','Hassan M.','Claire D.','Tobias W.','Yemi B.',
+    'Alex J.','Serena G.','Bruno V.','Tina O.','Ravi P.','Emma S.','Chris N.','Diane T.',
+    'Anton K.','Vera L.','Jerome B.','Adele F.','Noel W.','Bianca A.','Stefan R.','Kemi O.',
+    'Wayne D.','Lydia M.','Frank E.','Zoe H.','Andre C.','Tanya S.','Louis P.','Iris B.',
+    'George N.','Sonia K.','Alan T.','Mia J.','Benedict F.','Vera O.','Roland M.','Nora L.',
+    'Sean W.','Camille A.','Philip D.','Ada R.','Tobias C.','Ivy N.','Maxwell S.','Ruth K.',
+    'Nathan P.','Lena B.','Oscar T.','Fiona M.','Diego L.','Pearl H.','Simon A.','Jade W.',
+    'Patrick G.','Maya F.','Calvin R.','Rosa D.','Elijah O.','Nia S.','Gordon T.','Leah B.',
+    'Vincent K.','Naomi J.','Raymond C.','Felicia N.','Hugo M.','Cecile P.','Derek A.','Tilda R.',
+    'Jordan L.','Hana S.','Eugene B.','Vera T.','Clifford O.','Dina K.','Nate W.','Gina F.',
+    'Edmund D.','Petra M.','Bertrand A.','Yvonne C.','Leon H.','Miriam S.','Ruben T.','Elsie B.',
+  ];
+  const actions = [
+    { action:'withdrew',              color:'#ff6b6b', hasAmount:true  },
+    { action:'invested in Goat',      color:'#4cff72', hasAmount:true  },
+    { action:'deposited',             color:'#f4c430', hasAmount:true  },
+    { action:'earned returns',        color:'#4cff72', hasAmount:true  },
+    { action:'invested in Rice Farm', color:'#4cff72', hasAmount:true  },
+    { action:'invested in Cow',       color:'#4cff72', hasAmount:true  },
+    { action:'invested in Sheep',     color:'#4cff72', hasAmount:true  },
+    { action:'invested in Maize',     color:'#4cff72', hasAmount:true  },
+    { action:'invested in Rabbit',    color:'#4cff72', hasAmount:true  },
+    { action:'invested in Wheat Farm',color:'#4cff72', hasAmount:true  },
+    { action:'invested in Millet',    color:'#4cff72', hasAmount:true  },
+    { action:'joined AgricLife',      color:'#74b9ff', hasAmount:false },
+  ];
+  const amounts = ['GH₵50','GH₵100','GH₵150','GH₵200','GH₵250','GH₵300','GH₵350','GH₵400','GH₵450','GH₵500','GH₵600','GH₵700','GH₵750','GH₵800','GH₵900','GH₵1,000','GH₵1,200','GH₵1,500'];
+  const times = ['just now','1m ago','2m ago','3m ago','4m ago','5m ago','6m ago','8m ago','10m ago','12m ago','15m ago','18m ago','20m ago','25m ago','30m ago'];
+
+  // Generate 120 random feed entries
+  const feedData = Array.from({ length: 120 }, (_, i) => {
+    const name = names[i % names.length];
+    const act  = actions[Math.floor(Math.random() * actions.length)];
+    return {
+      name,
+      action: act.action,
+      amount: act.hasAmount ? amounts[Math.floor(Math.random() * amounts.length)] : '',
+      time:   times[Math.floor(Math.random() * times.length)],
+      color:  act.color
+    };
+  });
+
+  function makeRow(d) {
+    const el = document.createElement('div');
+    el.className = 'feed-row';
+    el.innerHTML = `
+      <div class="feed-dot" style="background:${d.color};box-shadow:0 0 5px ${d.color};"></div>
+      <div class="feed-row-text">
+        <strong>${d.name}</strong> ${d.action}
+      </div>
+      ${d.amount ? `<div class="feed-row-amount" style="color:${d.color};">${d.amount}</div>` : ''}
+      <div class="feed-divider"></div>
+      <div class="feed-row-time">${d.time}</div>`;
+    return el;
+  }
+
+  function initFeed() {
+    const container = document.getElementById('feedRows');
+    let idx = 0;
+
+    // Seed with first 2
+    container.appendChild(makeRow(feedData[0]));
+    container.appendChild(makeRow(feedData[1]));
+    idx = 2;
+
+    setInterval(() => {
+      const newRow = makeRow(feedData[idx % feedData.length]);
+      container.insertBefore(newRow, container.firstChild);
+      if (container.children.length > 2) container.removeChild(container.lastChild);
+      idx++;
+    }, 2800);
+  }
+  initFeed();
+</script>
+</body>
+</html>

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Profile — AgricLife</title>
+  <link rel="stylesheet" href="/css/style.css"/>
+  <link rel="stylesheet" href="/css/dashboard.css"/>
+</head>
+<body>
+<div class="dash-layout">
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="dash-main">
+    <div class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="hamburger-dash" id="hamburgerDash"><span></span><span></span><span></span></div>
+        <div class="topbar-title">My Profile</div>
+      </div>
+    </div>
+    <div class="dash-content">
+      <div id="profileHeader" class="profile-header">
+        <div class="profile-avatar-lg" id="profInitials">?</div>
+        <div>
+          <div class="profile-name" id="profName">Loading...</div>
+          <div class="profile-email" id="profEmail"></div>
+          <span class="profile-badge">Investor</span>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+        <!-- Personal Info -->
+        <div class="panel">
+          <div class="panel-header"><h3>Personal Information</h3></div>
+          <div class="panel-body">
+            <div id="profAlert" style="display:none;"></div>
+            <form onsubmit="updateProfile(event)">
+              <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input type="text" class="form-control" id="pFullName" required/>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input type="email" class="form-control" id="pEmail" disabled style="background:var(--bg-light);cursor:not-allowed;"/>
+                <p style="font-size:12px;color:var(--text-muted);margin-top:4px;">Email cannot be changed. Contact support if needed.</p>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Phone Number</label>
+                <input type="tel" class="form-control" id="pPhone"/>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Country</label>
+                <input type="text" class="form-control" id="pCountry" disabled style="background:var(--bg-light);"/>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Wallet Currency</label>
+                <input type="text" class="form-control" id="pCurrency" disabled style="background:var(--bg-light);"/>
+              </div>
+              <button type="submit" class="btn btn-primary" style="width:100%;" id="saveBtn">
+                <span id="saveBtnText">Save Changes</span>
+                <span id="saveSpinner" class="spinner" style="display:none;"></span>
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Change Password -->
+        <div class="panel">
+          <div class="panel-header"><h3>Change Password</h3></div>
+          <div class="panel-body">
+            <div id="pwdAlert" style="display:none;"></div>
+            <form onsubmit="changePassword(event)">
+              <div class="form-group">
+                <label class="form-label">Current Password</label>
+                <input type="password" class="form-control" id="currentPwd" required placeholder="Enter current password"/>
+              </div>
+              <div class="form-group">
+                <label class="form-label">New Password</label>
+                <input type="password" class="form-control" id="newPwd" required placeholder="Min. 8 characters"/>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Confirm New Password</label>
+                <input type="password" class="form-control" id="confirmPwd" required placeholder="Repeat new password"/>
+              </div>
+              <button type="submit" class="btn btn-outline" style="width:100%;" id="pwdBtn">
+                <span id="pwdBtnText">Update Password</span>
+                <span id="pwdSpinner" class="spinner" style="display:none;"></span>
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Account Stats -->
+        <div class="panel" style="grid-column:1/-1;">
+          <div class="panel-header"><h3>Account Summary</h3></div>
+          <div class="panel-body">
+            <div class="stats-row">
+              <div class="stat-card"><div class="stat-card-icon icon-green">💰</div><div class="stat-card-info"><div class="stat-label">Wallet Balance</div><div class="stat-val" id="ac-balance">—</div></div></div>
+              <div class="stat-card"><div class="stat-card-icon icon-gold">📈</div><div class="stat-card-info"><div class="stat-label">Total Invested</div><div class="stat-val" id="ac-invested">—</div></div></div>
+              <div class="stat-card"><div class="stat-card-icon icon-blue">✅</div><div class="stat-card-info"><div class="stat-label">Total Earnings</div><div class="stat-val" id="ac-earnings">—</div></div></div>
+              <div class="stat-card"><div class="stat-card-icon icon-purple">🤝</div><div class="stat-card-info"><div class="stat-label">Referral Earnings</div><div class="stat-val" id="ac-referral">—</div></div></div>
+            </div>
+            <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);display:flex;gap:16px;flex-wrap:wrap;font-size:14px;">
+              <div><span style="color:var(--text-muted);">Member Since:</span> <strong id="memberSince">—</strong></div>
+              <div><span style="color:var(--text-muted);">Last Login:</span> <strong id="lastLogin">—</strong></div>
+              <div><span style="color:var(--text-muted);">Referral Code:</span> <strong id="refCode" style="letter-spacing:1px;color:var(--primary);">—</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/js/auth-guard.js"></script>
+<script>
+  if (!requireAuth()) throw '';
+  const user = getUser();
+  document.getElementById('sidebar').innerHTML = buildSidebar(user);
+  setSidebarActive('nav-profile');
+  initSidebarToggle();
+
+  async function loadProfile() {
+    const data = await apiFetch('/api/user/profile');
+    if (!data?.success) return;
+    const u = data.user;
+    const sym = u.currencySymbol;
+    const initials = u.fullName.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+    document.getElementById('profInitials').textContent = initials;
+    document.getElementById('profName').textContent = u.fullName;
+    document.getElementById('profEmail').textContent = u.email;
+    document.getElementById('pFullName').value = u.fullName;
+    document.getElementById('pEmail').value = u.email;
+    document.getElementById('pPhone').value = u.phone || '';
+    document.getElementById('pCountry').value = u.country || '';
+    document.getElementById('pCurrency').value = `${u.currency} (${u.currencySymbol})`;
+    document.getElementById('memberSince').textContent = new Date(u.createdAt).toLocaleDateString();
+    document.getElementById('lastLogin').textContent = u.lastLogin ? new Date(u.lastLogin).toLocaleString() : 'N/A';
+    document.getElementById('refCode').textContent = u.referralCode || '—';
+    document.getElementById('ac-balance').textContent = fmt(u.walletBalance, sym);
+    document.getElementById('ac-invested').textContent = fmt(u.totalInvested, sym);
+    document.getElementById('ac-earnings').textContent = fmt(u.totalEarnings, sym);
+    document.getElementById('ac-referral').textContent = fmt(u.referralEarnings, sym);
+  }
+
+  async function updateProfile(e) {
+    e.preventDefault();
+    const btn = document.getElementById('saveBtn');
+    btn.disabled = true;
+    document.getElementById('saveBtnText').textContent = 'Saving...';
+    document.getElementById('saveSpinner').style.display = 'inline-block';
+    const data = await apiFetch('/api/user/profile', {
+      method: 'PUT',
+      body: JSON.stringify({ fullName: document.getElementById('pFullName').value, phone: document.getElementById('pPhone').value })
+    });
+    btn.disabled = false;
+    document.getElementById('saveBtnText').textContent = 'Save Changes';
+    document.getElementById('saveSpinner').style.display = 'none';
+    if (data?.success) { showToast('Profile updated successfully!', 'success'); loadProfile(); }
+    else showAlert('profAlert', data?.message || 'Update failed.', 'danger');
+  }
+
+  async function changePassword(e) {
+    e.preventDefault();
+    const newPwd = document.getElementById('newPwd').value;
+    const confirm = document.getElementById('confirmPwd').value;
+    if (newPwd !== confirm) { showAlert('pwdAlert', 'Passwords do not match.', 'danger'); return; }
+    if (newPwd.length < 8) { showAlert('pwdAlert', 'Password must be at least 8 characters.', 'danger'); return; }
+    const btn = document.getElementById('pwdBtn'); btn.disabled = true;
+    document.getElementById('pwdBtnText').textContent = 'Updating...';
+    document.getElementById('pwdSpinner').style.display = 'inline-block';
+    const data = await apiFetch('/api/user/change-password', {
+      method: 'PUT',
+      body: JSON.stringify({ currentPassword: document.getElementById('currentPwd').value, newPassword: newPwd })
+    });
+    btn.disabled = false;
+    document.getElementById('pwdBtnText').textContent = 'Update Password';
+    document.getElementById('pwdSpinner').style.display = 'none';
+    if (data?.success) { showToast('Password changed successfully!', 'success'); e.target.reset(); }
+    else showAlert('pwdAlert', data?.message || 'Password update failed.', 'danger');
+  }
+
+  function showAlert(id, msg, type) {
+    const el = document.getElementById(id);
+    el.style.display='flex'; el.className=`alert alert-${type}`;
+    el.innerHTML=`<span>${type==='success'?'✅':'❌'}</span> ${msg}`;
+  }
+
+  syncBalance();
+  loadProfile();
+</script>
+</body>
+</html>

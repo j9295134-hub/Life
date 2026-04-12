@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Wallet — AgricLife</title>
+  <link rel="stylesheet" href="/css/style.css"/>
+  <link rel="stylesheet" href="/css/dashboard.css"/>
+</head>
+<body>
+<div class="dash-layout">
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="dash-main">
+    <div class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="hamburger-dash" id="hamburgerDash"><span></span><span></span><span></span></div>
+        <div class="topbar-title">Wallet</div>
+      </div>
+    </div>
+    <div class="dash-content">
+      <!-- Balance Card -->
+      <div class="wallet-balance-card">
+        <div class="wallet-label">Available Balance</div>
+        <div class="wallet-amount" id="walletBal">—</div>
+        <div class="wallet-actions">
+          <button class="wallet-btn" onclick="showTab('deposit')">💰 Deposit Funds</button>
+          <button class="wallet-btn" onclick="showTab('withdraw')">💸 Withdraw</button>
+          <button class="wallet-btn" onclick="showTab('history')">📋 History</button>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div style="display:flex;gap:8px;margin-bottom:24px;" id="tabNav">
+        <button class="btn btn-primary btn-sm tab-btn" data-tab="deposit" onclick="showTab('deposit')">Deposit</button>
+        <button class="btn btn-outline btn-sm tab-btn" data-tab="withdraw" onclick="showTab('withdraw')">Withdraw</button>
+        <button class="btn btn-outline btn-sm tab-btn" data-tab="history" onclick="showTab('history')">Transaction History</button>
+      </div>
+
+      <!-- DEPOSIT TAB -->
+      <div id="tab-deposit" class="panel">
+        <div class="panel-header"><h3>💰 Deposit Funds</h3></div>
+        <div class="panel-body">
+          <p style="color:var(--text-muted);font-size:14px;margin-bottom:20px;">Minimum deposit: <strong id="minDep">GH₵40</strong>. After submitting your transaction ID, our team will verify and credit your wallet within a few hours.</p>
+          <div id="depositAlert" style="display:none;"></div>
+          <div class="form-group">
+            <label class="form-label">Amount to Deposit</label>
+            <div class="input-group">
+              <span class="input-icon" id="depSymbolIcon">GH₵</span>
+              <input type="number" class="form-control" id="depAmount" placeholder="Enter amount" min="40" step="0.01"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Select Payment Method</label>
+            <div class="method-selector">
+              <div class="method-option" data-method="mtn_momo" onclick="selectMethod(this,'deposit')">
+                <div class="method-icon">📱</div><div class="method-name">MTN MoMo</div>
+              </div>
+              <div class="method-option" data-method="telecel_momo" onclick="selectMethod(this,'deposit')">
+                <div class="method-icon">📲</div><div class="method-name">Telecel</div>
+              </div>
+              <div class="method-option" data-method="airteltigo_momo" onclick="selectMethod(this,'deposit')">
+                <div class="method-icon">📡</div><div class="method-name">AirtelTigo</div>
+              </div>
+              <div class="method-option" data-method="bank" onclick="selectMethod(this,'deposit')" style="grid-column:1/-1;">
+                <div class="method-icon">🏦</div><div class="method-name">Bank Transfer</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- MoMo Form -->
+          <div class="method-form" id="dep-momo-form">
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Account Name</label><input type="text" class="form-control" id="dep-momoName" placeholder="Name on MoMo"/></div>
+              <div class="form-group"><label class="form-label">MoMo Number</label><input type="tel" class="form-control" id="dep-momoNumber" placeholder="e.g. 0244000000"/></div>
+            </div>
+          </div>
+
+          <!-- Bank Form -->
+          <div class="method-form" id="dep-bank-form">
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Account Name</label><input type="text" class="form-control" id="dep-bankName" placeholder="Name on account"/></div>
+              <div class="form-group"><label class="form-label">Account Number</label><input type="text" class="form-control" id="dep-bankNumber" placeholder="Enter account number"/></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Select Bank</label>
+              <select class="form-control form-select" id="dep-bankSelect">
+                <option value="">— Choose Bank —</option>
+                <option>GCB Bank</option><option>Ecobank Ghana</option><option>Absa Bank Ghana</option>
+                <option>Stanbic Bank Ghana</option><option>Fidelity Bank Ghana</option><option>Zenith Bank Ghana</option>
+                <option>CalBank</option><option>Access Bank Ghana</option><option>Republic Bank Ghana</option>
+                <option>United Bank for Africa (UBA)</option><option>First Atlantic Bank</option>
+                <option>National Investment Bank (NIB)</option><option>Prudential Bank</option>
+                <option>OmniBSIC Bank</option><option>ARB Apex Bank</option>
+                <option>Consolidated Bank Ghana (CBG)</option><option>GT Bank Ghana</option>
+                <option>First National Bank Ghana</option><option>Societe Generale Ghana</option>
+                <option>Bank of Africa Ghana</option><option>Agricultural Development Bank (ADB)</option>
+                <option>Ghana Commercial Bank</option><option>Universal Merchant Bank</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="dep-method-selected" style="display:none;">
+            <button class="btn btn-primary" style="width:100%;margin-top:8px;" onclick="proceedDeposit()">Proceed to Deposit →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- WITHDRAW TAB -->
+      <div id="tab-withdraw" class="panel" style="display:none;">
+        <div class="panel-header"><h3>💸 Withdraw Funds</h3></div>
+        <div class="panel-body">
+          <p style="color:var(--text-muted);font-size:14px;margin-bottom:20px;">Minimum withdrawal: <strong id="minWit">GH₵50</strong>. Withdrawals are processed within 24 hours after admin confirmation.</p>
+          <div id="withdrawAlert" style="display:none;"></div>
+          <div class="form-group">
+            <label class="form-label">Amount to Withdraw</label>
+            <div class="input-group">
+              <span class="input-icon" id="witSymbolIcon">GH₵</span>
+              <input type="number" class="form-control" id="witAmount" placeholder="Enter amount" min="50" step="0.01"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Select Payment Method</label>
+            <div class="method-selector">
+              <div class="method-option" data-method="mtn_momo" onclick="selectMethod(this,'withdraw')">
+                <div class="method-icon">📱</div><div class="method-name">MTN MoMo</div>
+              </div>
+              <div class="method-option" data-method="telecel_momo" onclick="selectMethod(this,'withdraw')">
+                <div class="method-icon">📲</div><div class="method-name">Telecel</div>
+              </div>
+              <div class="method-option" data-method="airteltigo_momo" onclick="selectMethod(this,'withdraw')">
+                <div class="method-icon">📡</div><div class="method-name">AirtelTigo</div>
+              </div>
+              <div class="method-option" data-method="bank" onclick="selectMethod(this,'withdraw')" style="grid-column:1/-1;">
+                <div class="method-icon">🏦</div><div class="method-name">Bank Transfer</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- MoMo Form -->
+          <div class="method-form" id="wit-momo-form">
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Account Name</label><input type="text" class="form-control" id="wit-momoName" placeholder="Name on MoMo"/></div>
+              <div class="form-group"><label class="form-label">MoMo Number</label><input type="tel" class="form-control" id="wit-momoNumber" placeholder="e.g. 0244000000"/></div>
+            </div>
+          </div>
+
+          <!-- Bank Form -->
+          <div class="method-form" id="wit-bank-form">
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Account Name</label><input type="text" class="form-control" id="wit-bankName" placeholder="Name on account"/></div>
+              <div class="form-group"><label class="form-label">Account Number</label><input type="text" class="form-control" id="wit-bankNumber" placeholder="Enter account number"/></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Select Bank</label>
+              <select class="form-control form-select" id="wit-bankSelect">
+                <option value="">— Choose Bank —</option>
+                <option>GCB Bank</option><option>Ecobank Ghana</option><option>Absa Bank Ghana</option>
+                <option>Stanbic Bank Ghana</option><option>Fidelity Bank Ghana</option><option>Zenith Bank Ghana</option>
+                <option>CalBank</option><option>Access Bank Ghana</option><option>Republic Bank Ghana</option>
+                <option>United Bank for Africa (UBA)</option><option>First Atlantic Bank</option>
+                <option>National Investment Bank (NIB)</option><option>Prudential Bank</option>
+                <option>OmniBSIC Bank</option><option>ARB Apex Bank</option>
+                <option>Consolidated Bank Ghana (CBG)</option><option>GT Bank Ghana</option>
+                <option>First National Bank Ghana</option><option>Societe Generale Ghana</option>
+                <option>Bank of Africa Ghana</option><option>Agricultural Development Bank (ADB)</option>
+                <option>Ghana Commercial Bank</option><option>Universal Merchant Bank</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="wit-method-selected" style="display:none;">
+            <button class="btn btn-primary" style="width:100%;margin-top:8px;" onclick="submitWithdrawal()">Submit Withdrawal Request</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- HISTORY TAB -->
+      <div id="tab-history" class="panel" style="display:none;">
+        <div class="panel-header"><h3>Transaction History</h3></div>
+        <div class="panel-body table-wrap" id="txnHistoryPanel">
+          <div style="text-align:center;padding:40px;color:var(--text-muted);">Loading...</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Deposit Popup Modal -->
+<div class="modal-overlay" id="depositPopup">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Complete Your Deposit</h3>
+      <button class="modal-close" onclick="document.getElementById('depositPopup').classList.remove('active')">✕</button>
+    </div>
+    <div class="deposit-info-box">
+      <div class="info-label">Send Payment To</div>
+      <div class="info-value" id="popupAccountInfo">Loading...</div>
+      <div class="info-note">⚠ Send exactly the amount you entered. After payment, enter your transaction ID below to confirm.</div>
+    </div>
+    <div id="popupDepAmount" style="background:var(--bg-light);border-radius:10px;padding:12px;text-align:center;margin-bottom:16px;font-weight:700;font-size:1.1rem;color:var(--primary);"></div>
+    <div class="form-group">
+      <label class="form-label">Transaction ID / Reference Number</label>
+      <input type="text" class="form-control" id="txnId" placeholder="Enter the transaction ID from your payment"/>
+    </div>
+    <button class="btn btn-primary" style="width:100%;" onclick="submitDeposit()">
+      <span id="submitDepText">Submit Deposit Request</span>
+      <span id="submitDepSpinner" class="spinner" style="display:none;"></span>
+    </button>
+  </div>
+</div>
+
+<script src="/js/auth-guard.js"></script>
+<script>
+  if (!requireAuth()) throw '';
+  const user = getUser();
+  const sym = user?.currencySymbol || 'GH₵';
+  document.getElementById('sidebar').innerHTML = buildSidebar(user);
+  setSidebarActive('nav-wallet');
+  initSidebarToggle();
+  document.getElementById('walletBal').textContent = fmt(user?.walletBalance, sym);
+  document.getElementById('depSymbolIcon').textContent = sym;
+  document.getElementById('witSymbolIcon').textContent = sym;
+
+  let activeDepMethod = '', activeWitMethod = '';
+
+  function showTab(tab) {
+    ['deposit','withdraw','history'].forEach(t => {
+      document.getElementById('tab-'+t).style.display = t === tab ? 'block' : 'none';
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        b.className = b.dataset.tab === tab ? 'btn btn-primary btn-sm tab-btn' : 'btn btn-outline btn-sm tab-btn';
+      });
+    });
+    if (tab === 'history') loadHistory();
+  }
+
+  function selectMethod(el, mode) {
+    const prefix = mode === 'deposit' ? 'dep' : 'wit';
+    document.querySelectorAll(`#tab-${mode} .method-option`).forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    const method = el.dataset.method;
+    if (mode === 'deposit') activeDepMethod = method; else activeWitMethod = method;
+    document.querySelectorAll(`#tab-${mode} .method-form`).forEach(f => f.classList.remove('active'));
+    const isMomo = method !== 'bank';
+    document.getElementById(`${prefix}-${isMomo?'momo':'bank'}-form`).classList.add('active');
+    document.getElementById(`${prefix}-method-selected`).style.display = 'block';
+  }
+
+  function proceedDeposit() {
+    const amount = parseFloat(document.getElementById('depAmount').value);
+    if (!amount || amount < 40) { showAlert('depositAlert', `Minimum deposit is ${sym}40.`, 'danger'); return; }
+    loadDepositAccounts(amount);
+  }
+
+  async function loadDepositAccounts(amount) {
+    const data = await apiFetch('/api/wallet/deposit-accounts');
+    const accounts = data?.accounts || [];
+    const method = activeDepMethod;
+    const account = accounts.find(a => a.method === method) || accounts[0];
+    let info = 'Contact admin for payment details.';
+    if (account) {
+      info = account.method === 'bank'
+        ? `${account.bankName} • Acc: ${account.accountNumber} • Name: ${account.accountName}`
+        : `${account.network || account.method.toUpperCase().replace(/_/g,' ')} • ${account.accountNumber} • ${account.accountName}`;
+    }
+    document.getElementById('popupAccountInfo').textContent = info;
+    document.getElementById('popupDepAmount').innerHTML = `Amount: <span style="color:var(--accent)">${sym}${amount.toFixed(2)}</span>`;
+    document.getElementById('depositPopup').classList.add('active');
+  }
+
+  async function submitDeposit() {
+    const txnId = document.getElementById('txnId').value.trim();
+    if (!txnId) { showToast('Please enter your transaction ID.', 'error'); return; }
+    const amount = parseFloat(document.getElementById('depAmount').value);
+    const method = activeDepMethod;
+    const isMomo = method !== 'bank';
+    const btn = document.getElementById('submitDepText');
+    const sp = document.getElementById('submitDepSpinner');
+    btn.textContent = 'Submitting...'; sp.style.display = 'inline-block';
+
+    const body = {
+      amount, method, transactionId: txnId,
+      accountName: document.getElementById(isMomo?'dep-momoName':'dep-bankName').value,
+      accountNumber: document.getElementById(isMomo?'dep-momoNumber':'dep-bankNumber').value,
+      bankName: !isMomo ? document.getElementById('dep-bankSelect').value : null,
+      network: isMomo ? method.replace(/_momo/,'').toUpperCase() : null
+    };
+
+    const data = await apiFetch('/api/wallet/deposit', { method:'POST', body: JSON.stringify(body) });
+    btn.textContent = 'Submit Deposit Request'; sp.style.display = 'none';
+    document.getElementById('depositPopup').classList.remove('active');
+    if (data?.success) {
+      showToast('Deposit submitted! Awaiting admin confirmation.', 'success');
+      document.getElementById('txnId').value = '';
+    } else {
+      showToast(data?.message || 'Deposit failed.', 'error');
+    }
+  }
+
+  async function submitWithdrawal() {
+    const amount = parseFloat(document.getElementById('witAmount').value);
+    if (!amount || amount < 50) { showAlert('withdrawAlert', `Minimum withdrawal is ${sym}50.`, 'danger'); return; }
+    const method = activeWitMethod;
+    if (!method) { showAlert('withdrawAlert', 'Please select a payment method.', 'danger'); return; }
+    const isMomo = method !== 'bank';
+    const body = {
+      amount, method,
+      accountName: document.getElementById(isMomo?'wit-momoName':'wit-bankName').value,
+      accountNumber: document.getElementById(isMomo?'wit-momoNumber':'wit-bankNumber').value,
+      bankName: !isMomo ? document.getElementById('wit-bankSelect').value : null,
+      network: isMomo ? method.replace(/_momo/,'').toUpperCase() : null
+    };
+    const data = await apiFetch('/api/wallet/withdraw', { method:'POST', body: JSON.stringify(body) });
+    if (data?.success) {
+      showToast('Withdrawal request submitted. Processing within 24 hours.', 'success');
+      const stats = await apiFetch('/api/user/dashboard-stats');
+      if (stats?.success) {
+        document.getElementById('walletBal').textContent = fmt(stats.stats.walletBalance, sym);
+        const u = getUser(); u.walletBalance = stats.stats.walletBalance;
+        localStorage.setItem('user', JSON.stringify(u));
+      }
+    } else {
+      showAlert('withdrawAlert', data?.message || 'Withdrawal failed.', 'danger');
+    }
+  }
+
+  async function loadHistory() {
+    const data = await apiFetch('/api/wallet/transactions');
+    const panel = document.getElementById('txnHistoryPanel');
+    if (!data?.success || !data.transactions.length) {
+      panel.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><h3>No Transactions</h3><p>Your transaction history will appear here.</p></div>`;
+      return;
+    }
+    const icons = { deposit:'💰', withdrawal:'💸', investment:'🌱', return:'📈', referral_bonus:'🤝' };
+    panel.innerHTML = `<table><thead><tr><th>Type</th><th>Amount</th><th>Method</th><th>Reference</th><th>Status</th><th>Date</th></tr></thead><tbody>` +
+      data.transactions.map(t => `
+      <tr>
+        <td><div style="display:flex;align-items:center;gap:8px;">${icons[t.type]||'💳'} <span style="font-weight:600;">${t.type.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}</span></div></td>
+        <td style="font-weight:700;color:${t.type==='withdrawal'||t.type==='investment'?'#721c24':'#155724'};">${t.type==='withdrawal'||t.type==='investment'?'-':'+'}${fmt(t.amount,sym)}</td>
+        <td style="font-size:13px;">${(t.method||'system').replace(/_/g,' ')}</td>
+        <td style="font-size:12px;font-family:monospace;">${t.reference||'—'}</td>
+        <td>${statusBadge(t.status)}</td>
+        <td style="font-size:12px;color:var(--text-muted);">${new Date(t.createdAt).toLocaleString()}</td>
+      </tr>`).join('') + `</tbody></table>`;
+  }
+
+  function showAlert(id, msg, type) {
+    const el = document.getElementById(id);
+    el.style.display='flex'; el.className=`alert alert-${type}`;
+    el.innerHTML=`<span>${type==='success'?'✅':'❌'}</span> ${msg}`;
+  }
+
+  // Sync live balance on load
+  syncBalance();
+
+  // Check hash for auto-tab
+  const hash = location.hash.replace('#','');
+  showTab(['deposit','withdraw','history'].includes(hash) ? hash : 'deposit');
+</script>
+</body>
+</html>
