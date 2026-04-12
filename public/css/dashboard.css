@@ -3,7 +3,7 @@
    ============================================================ */
 
 /* ---- Sidebar ---- */
-.dash-layout { display: flex; min-height: 100vh; background: var(--bg-light); }
+.dash-layout { display: flex; min-height: 100vh; background: var(--bg-light); overflow-x: hidden; }
 .sidebar {
   width: 260px; background: var(--primary-dark); color: #fff;
   display: flex; flex-direction: column;
