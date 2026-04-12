@@ -181,23 +181,25 @@
     'Omar Z.','Hannah Q.','Felix U.','Nina R.','Victor A.','Sandra O.','Lucas M.','Zara T.',
     'Henry B.','Layla K.','Ryan S.','Jasmine N.','Ethan C.','Nadia R.','Marcus L.','Stella P.',
   ];
+  const investAmounts = ['GH₵50','GH₵100','GH₵150','GH₵200','GH₵250','GH₵300','GH₵400','GH₵500','GH₵600','GH₵750','GH₵800','GH₵1,000','GH₵1,200','GH₵1,500','GH₵2,000','GH₵2,500','GH₵3,000','GH₵4,000','GH₵5,000','GH₵7,500','GH₵10,000','GH₵15,000','GH₵20,000'];
+  const returnAmounts = ['GH₵7.50','GH₵15','GH₵20','GH₵30','GH₵40','GH₵50','GH₵60','GH₵75','GH₵90','GH₵100','GH₵120','GH₵150','GH₵175','GH₵200','GH₵250','GH₵300','GH₵375','GH₵400','GH₵500','GH₵600','GH₵750','GH₵800','GH₵1,000','GH₵1,200','GH₵1,500','GH₵2,000','GH₵2,500','GH₵3,000','GH₵4,000','GH₵5,000','GH₵6,000','GH₵8,000'];
   const actions = [
-    { action:'withdrew',              color:'#ff6b6b', hasAmount:true  },
-    { action:'invested in Goat',      color:'#4cff72', hasAmount:true  },
-    { action:'deposited',             color:'#f4c430', hasAmount:true  },
-    { action:'earned returns',        color:'#4cff72', hasAmount:true  },
-    { action:'invested in Rice Farm', color:'#4cff72', hasAmount:true  },
-    { action:'invested in Cow',       color:'#4cff72', hasAmount:true  },
-    { action:'invested in Sheep',     color:'#4cff72', hasAmount:true  },
-    { action:'invested in Maize',     color:'#4cff72', hasAmount:true  },
-    { action:'invested in Rabbit',    color:'#4cff72', hasAmount:true  },
-    { action:'joined AgricLife',      color:'#74b9ff', hasAmount:false },
+    { action:'withdrew',              color:'#ff6b6b', pool:'invest' },
+    { action:'invested in Goat',      color:'#4cff72', pool:'invest' },
+    { action:'deposited',             color:'#f4c430', pool:'invest' },
+    { action:'earned returns',        color:'#4cff72', pool:'return' },
+    { action:'invested in Rice Farm', color:'#4cff72', pool:'invest' },
+    { action:'invested in Cow',       color:'#4cff72', pool:'invest' },
+    { action:'invested in Sheep',     color:'#4cff72', pool:'invest' },
+    { action:'invested in Maize',     color:'#4cff72', pool:'invest' },
+    { action:'invested in Rabbit',    color:'#4cff72', pool:'invest' },
+    { action:'joined AgricLife',      color:'#74b9ff', pool:null     },
   ];
-  const amounts = ['GH₵50','GH₵100','GH₵150','GH₵200','GH₵250','GH₵300','GH₵400','GH₵500','GH₵750','GH₵1,000','GH₵1,500'];
   const times = ['just now','1m ago','2m ago','3m ago','5m ago','8m ago','10m ago','15m ago','20m ago'];
   const feedData = Array.from({ length: 80 }, (_, i) => {
     const act = actions[Math.floor(Math.random() * actions.length)];
-    return { name: names[i % names.length], action: act.action, amount: act.hasAmount ? amounts[Math.floor(Math.random() * amounts.length)] : '', time: times[Math.floor(Math.random() * times.length)], color: act.color };
+    const pool = act.pool === 'return' ? returnAmounts : act.pool === 'invest' ? investAmounts : null;
+    return { name: names[i % names.length], action: act.action, amount: pool ? pool[Math.floor(Math.random() * pool.length)] : '', time: times[Math.floor(Math.random() * times.length)], color: act.color };
   });
   function makeRow(d) {
     const el = document.createElement('div');
