@@ -38,7 +38,7 @@
 .sidebar-footer { padding: 16px 12px; border-top: 1px solid rgba(255,255,255,0.1); }
 
 /* ---- Dashboard Main ---- */
-.dash-main { margin-left: 260px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+.dash-main { margin-left: 260px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; min-width: 0; overflow-x: hidden; }
 .dash-topbar {
   background: #fff; padding: 0 28px; height: 64px;
   display: flex; align-items: center; justify-content: space-between;
@@ -51,7 +51,7 @@
 .topbar-wallet span { color: var(--accent); }
 .hamburger-dash { display: none; }
 
-.dash-content { padding: 28px; flex: 1; }
+.dash-content { padding: 28px; flex: 1; min-width: 0; max-width: 100%; }
 
 /* ---- Stats Cards ---- */
 .stats-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 18px; margin-bottom: 28px; }
