@@ -28,7 +28,7 @@
         </div>
       </div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:24px;">
         <!-- Personal Info -->
         <div class="panel">
           <div class="panel-header"><h3>Personal Information</h3></div>
@@ -40,21 +40,12 @@
                 <input type="text" class="form-control" id="pFullName" required/>
               </div>
               <div class="form-group">
-                <label class="form-label">Email Address</label>
+                <label class="form-label">Email</label>
                 <input type="email" class="form-control" id="pEmail" disabled style="background:var(--bg-light);cursor:not-allowed;"/>
-                <p style="font-size:12px;color:var(--text-muted);margin-top:4px;">Email cannot be changed. Contact support if needed.</p>
               </div>
               <div class="form-group">
                 <label class="form-label">Phone Number</label>
                 <input type="tel" class="form-control" id="pPhone"/>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Country</label>
-                <input type="text" class="form-control" id="pCountry" disabled style="background:var(--bg-light);"/>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Wallet Currency</label>
-                <input type="text" class="form-control" id="pCurrency" disabled style="background:var(--bg-light);"/>
               </div>
               <button type="submit" class="btn btn-primary" style="width:100%;" id="saveBtn">
                 <span id="saveBtnText">Save Changes</span>
@@ -79,7 +70,7 @@
                 <input type="password" class="form-control" id="newPwd" required placeholder="Min. 8 characters"/>
               </div>
               <div class="form-group">
-                <label class="form-label">Confirm New Password</label>
+                <label class="form-label">Confirm Password</label>
                 <input type="password" class="form-control" id="confirmPwd" required placeholder="Repeat new password"/>
               </div>
               <button type="submit" class="btn btn-outline" style="width:100%;" id="pwdBtn">
@@ -132,8 +123,6 @@
     document.getElementById('pFullName').value = u.fullName;
     document.getElementById('pEmail').value = u.email;
     document.getElementById('pPhone').value = u.phone || '';
-    document.getElementById('pCountry').value = u.country || '';
-    document.getElementById('pCurrency').value = `${u.currency} (${u.currencySymbol})`;
     document.getElementById('memberSince').textContent = new Date(u.createdAt).toLocaleDateString();
     document.getElementById('lastLogin').textContent = u.lastLogin ? new Date(u.lastLogin).toLocaleString() : 'N/A';
     document.getElementById('refCode').textContent = u.referralCode || '—';
