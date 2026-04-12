@@ -173,7 +173,7 @@ tbody tr:hover { background: var(--bg-light); }
   .hamburger-dash span { display: block; width: 22px; height: 2px; background: var(--primary); border-radius: 2px; }
   .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 899; display: none; }
   .sidebar-overlay.active { display: block; }
-  .stocks-grid { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .stocks-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .stock-card-img { height: 120px; }
   .stock-card-body { padding: 10px; }
   .stock-card-body h3 { font-size: 0.82rem; }
@@ -218,7 +218,7 @@ tbody tr:hover { background: var(--bg-light); }
   .stat-card-icon { width: 34px; height: 34px; font-size: 1rem; flex-shrink: 0; }
   .stat-card-info .stat-val { font-size: 1.05rem; }
   .stat-card-info .stat-label { font-size: 10px; }
-  .stocks-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .stocks-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; }
   .stock-card-img { height: 80px; }
   .stock-card-body { padding: 6px; }
   .stock-card-body h3 { font-size: 0.7rem; }

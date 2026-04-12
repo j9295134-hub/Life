@@ -268,7 +268,7 @@ h3 { font-size: 1.3rem; }
   .hero-stats { justify-content: center; }
   .hero-actions { justify-content: center; }
   .hero-visual { display: none; }
-  .stocks-grid { grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .stocks-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
   .steps-grid { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 768px) {
@@ -281,7 +281,7 @@ h3 { font-size: 1.3rem; }
   .form-row { grid-template-columns: 1fr; }
   .footer-grid { grid-template-columns: 1fr 1fr; gap: 24px; }
   .stats-grid { grid-template-columns: 1fr 1fr; }
-  .stocks-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .stocks-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   /* Compact stock cards on mobile */
   .stock-card-img { height: 120px; }
   .stock-card-body { padding: 10px; }
@@ -305,7 +305,7 @@ h3 { font-size: 1.3rem; }
   .testimonials-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 480px) {
-  .stocks-grid { grid-template-columns: repeat(3, 1fr); gap: 7px; }
+  .stocks-grid { grid-template-columns: repeat(2, 1fr); gap: 7px; }
   .stock-card-img { height: 90px; }
   .stock-card-body { padding: 7px; }
   .stock-card-body h3 { font-size: 0.73rem; }
