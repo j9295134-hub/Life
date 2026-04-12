@@ -30,9 +30,20 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST /api/stocks - admin
-router.post('/', protect, adminOnly, upload.single('image'), async (req, res) => {
+router.post('/', protect, adminOnly, (req, res, next) => {
+  upload.single('image')(req, res, (err) => {
+    if (err) {
+      console.error('[Upload error]', err.message);
+      return res.status(400).json({ success: false, message: 'Image upload failed: ' + err.message });
+    }
+    next();
+  });
+}, async (req, res) => {
   try {
     const { name, category, description, price, duration, durationUnit, roiPercentage, totalSlots, riskLevel, isFeatured } = req.body;
+    if (!name || !category || !description || !price || !duration || !roiPercentage) {
+      return res.status(400).json({ success: false, message: 'Missing required fields.' });
+    }
     const stock = new Stock({
       name, category, description,
       price: parseFloat(price),
@@ -42,19 +53,27 @@ router.post('/', protect, adminOnly, upload.single('image'), async (req, res) =>
       totalSlots: totalSlots ? parseInt(totalSlots) : null,
       riskLevel: riskLevel || 'Low',
       isFeatured: isFeatured === 'true',
-      image: req.file ? req.file.path : null,         // Cloudinary URL
+      image: req.file ? req.file.path : null,
       imagePublicId: req.file ? req.file.filename : null
     });
     await stock.save();
     res.status(201).json({ success: true, message: 'Stock created.', stock });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, message: 'Server error.' });
+    console.error('[POST /stocks]', err.message);
+    res.status(500).json({ success: false, message: err.message || 'Server error.' });
   }
 });
 
 // PUT /api/stocks/:id - admin
-router.put('/:id', protect, adminOnly, upload.single('image'), async (req, res) => {
+router.put('/:id', protect, adminOnly, (req, res, next) => {
+  upload.single('image')(req, res, (err) => {
+    if (err) {
+      console.error('[Upload error]', err.message);
+      return res.status(400).json({ success: false, message: 'Image upload failed: ' + err.message });
+    }
+    next();
+  });
+}, async (req, res) => {
   try {
     const updates = { ...req.body, updatedAt: new Date() };
     if (req.file) {

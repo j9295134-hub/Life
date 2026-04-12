@@ -227,13 +227,24 @@
     const token = getToken();
     const url = id ? `${API}/api/stocks/${id}` : `${API}/api/stocks`;
     const method = id ? 'PUT' : 'POST';
-    const res = await fetch(url, { method, headers: { Authorization: `Bearer ${token}` }, body: form });
-    const data = await res.json();
-    btn.disabled = false;
-    document.getElementById('saveStockText').textContent = 'Save Stock';
-    document.getElementById('saveStockSpinner').style.display = 'none';
-    if (data?.success) { closeModal(); showToast(data.message, 'success'); loadStocks(); }
-    else showToast(data?.message || 'Save failed.', 'error');
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 60000);
+      const res = await fetch(url, { method, headers: { Authorization: `Bearer ${token}` }, body: form, signal: controller.signal });
+      clearTimeout(timeout);
+      const data = await res.json();
+      btn.disabled = false;
+      document.getElementById('saveStockText').textContent = 'Save Stock';
+      document.getElementById('saveStockSpinner').style.display = 'none';
+      if (data?.success) { closeModal(); showToast(data.message, 'success'); loadStocks(); }
+      else showToast(data?.message || 'Save failed.', 'error');
+    } catch (err) {
+      btn.disabled = false;
+      document.getElementById('saveStockText').textContent = 'Save Stock';
+      document.getElementById('saveStockSpinner').style.display = 'none';
+      if (err.name === 'AbortError') showToast('Request timed out. Render may be waking up — try again in 30 seconds.', 'error');
+      else showToast('Network error: ' + err.message, 'error');
+    }
   }
 
   async function deleteStock(id) {
