@@ -283,7 +283,7 @@ h3 { font-size: 1.3rem; }
   .stats-grid { grid-template-columns: 1fr 1fr; }
   .stocks-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   /* Compact stock cards on mobile */
-  .stock-card-img { height: 120px; }
+  .stock-card-img { height: 160px; }
   .stock-card-body { padding: 10px; }
   .stock-card-body h3 { font-size: 0.82rem; margin-bottom: 6px; }
   .stock-card-body p  { display: none; }
@@ -306,7 +306,7 @@ h3 { font-size: 1.3rem; }
 }
 @media (max-width: 480px) {
   .stocks-grid { grid-template-columns: repeat(2, 1fr); gap: 7px; }
-  .stock-card-img { height: 90px; }
+  .stock-card-img { height: 130px; }
   .stock-card-body { padding: 7px; }
   .stock-card-body h3 { font-size: 0.73rem; }
   .stock-meta { gap: 4px; margin-bottom: 6px; }
