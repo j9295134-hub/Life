@@ -53,9 +53,7 @@ const generateRef = () => 'REF-' + Date.now() + '-' + Math.random().toString(36)
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
   try {
-    const { fullName, email, phone, password, country, referralCode, recaptcha } = req.body;
-    const captchaOk = await verifyRecaptcha(recaptcha);
-    if (!captchaOk) return res.status(400).json({ success: false, message: 'reCAPTCHA verification failed. Please try again.' });
+    const { fullName, email, phone, password, country, referralCode } = req.body;
     if (!fullName || !email || !phone || !password || !country) {
       return res.status(400).json({ success: false, message: 'All fields are required.' });
     }
@@ -127,9 +125,7 @@ router.post('/register', async (req, res) => {
 // POST /api/auth/login
 router.post('/login', async (req, res) => {
   try {
-    const { email, password, recaptcha } = req.body;
-    const captchaOk = await verifyRecaptcha(recaptcha);
-    if (!captchaOk) return res.status(400).json({ success: false, message: 'reCAPTCHA verification failed. Please try again.' });
+    const { email, password } = req.body;
     if (!email || !password) return res.status(400).json({ success: false, message: 'Email and password are required.' });
 
     const user = await User.findOne({ email });

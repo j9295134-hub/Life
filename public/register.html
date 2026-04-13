@@ -93,11 +93,6 @@
         <input type="text" class="form-control" id="referralCode" placeholder="Enter referral code if you have one"/>
       </div>
 
-      <!-- reCAPTCHA -->
-      <div class="form-group">
-        <div class="g-recaptcha" data-sitekey="6LccSbQsAAAAAd82xVA8YOH_BoXbdgu2qqEBwf4" data-size="normal" style="transform:scale(0.9);transform-origin:0 0;max-height:78px;overflow:hidden;"></div>
-      </div>
-
       <div class="form-group">
         <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px;color:var(--text-muted);">
           <input type="checkbox" id="terms" required style="margin-top:2px;flex-shrink:0;accent-color:var(--primary);"/>
@@ -190,6 +185,5 @@
 
   if (localStorage.getItem('token')) window.location.href = '/dashboard/index.html';
 </script>
-<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </body>
 </html>
