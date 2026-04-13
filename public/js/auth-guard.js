@@ -4,47 +4,168 @@ const API = 'https://life-ktxw.onrender.com';
 function getToken() { return localStorage.getItem('token'); }
 function getUser()  { return JSON.parse(localStorage.getItem('user') || 'null'); }
 
-// ---- Global balance sync ----
-// Call once per page. Fetches live balance from API, updates localStorage
-// and refreshes every balance element on the page.
+// ─────────────────────────────────────────────
+//  API CACHE
+//  Stores GET responses in localStorage with TTL.
+//  Mutations (POST/PUT/DELETE) auto-invalidate
+//  related cache keys so fresh data follows every action.
+// ─────────────────────────────────────────────
+const Cache = (() => {
+  const PREFIX = 'agric_cache_';
+
+  // TTL map (milliseconds) — how long each endpoint stays fresh
+  const TTL = {
+    '/api/user/dashboard-stats':  2 * 60 * 1000,   // 2 min
+    '/api/wallet/transactions':   2 * 60 * 1000,
+    '/api/investments':           3 * 60 * 1000,
+    '/api/stocks':               10 * 60 * 1000,   // 10 min — rarely changes
+    '/api/wallet/deposit-accounts': 10 * 60 * 1000,
+    '/api/user/profile':          5 * 60 * 1000,
+    '/api/referral':              5 * 60 * 1000,
+  };
+
+  // After a mutation, which cache keys to wipe
+  const INVALIDATION_MAP = {
+    '/api/wallet/deposit':   ['/api/user/dashboard-stats', '/api/wallet/transactions'],
+    '/api/wallet/withdraw':  ['/api/user/dashboard-stats', '/api/wallet/transactions'],
+    '/api/investments':      ['/api/user/dashboard-stats', '/api/investments'],
+    '/api/user/profile':     ['/api/user/profile'],
+    '/api/stocks':           ['/api/stocks'],
+  };
+
+  function key(url) { return PREFIX + url; }
+
+  function get(url) {
+    try {
+      const raw = localStorage.getItem(key(url));
+      if (!raw) return null;
+      const { data, expires } = JSON.parse(raw);
+      if (Date.now() > expires) { localStorage.removeItem(key(url)); return null; }
+      return data;
+    } catch { return null; }
+  }
+
+  function set(url, data) {
+    const ttl = Object.entries(TTL).find(([k]) => url.startsWith(k))?.[1];
+    if (!ttl) return; // don't cache unknown endpoints
+    try {
+      localStorage.setItem(key(url), JSON.stringify({ data, expires: Date.now() + ttl }));
+    } catch { /* storage full — skip */ }
+  }
+
+  function invalidate(mutationUrl) {
+    const targets = Object.entries(INVALIDATION_MAP).find(([k]) => mutationUrl.includes(k))?.[1] || [];
+    targets.forEach(t => localStorage.removeItem(key(t)));
+    // Also wipe any parameterised version of the key
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k?.startsWith(PREFIX) && targets.some(t => k.includes(t.replace(PREFIX,'')))) {
+        localStorage.removeItem(k); i--;
+      }
+    }
+  }
+
+  function flush() {
+    const toRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k?.startsWith(PREFIX)) toRemove.push(k);
+    }
+    toRemove.forEach(k => localStorage.removeItem(k));
+  }
+
+  return { get, set, invalidate, flush };
+})();
+
+// ─────────────────────────────────────────────
+//  apiFetch  — cache-aware fetch wrapper
+//  GET  → return cached data instantly if fresh,
+//         then re-fetch in background and update UI
+//  POST/PUT/DELETE → skip cache, invalidate related keys after success
+// ─────────────────────────────────────────────
+async function apiFetch(url, options = {}) {
+  const token = getToken();
+  const method = (options.method || 'GET').toUpperCase();
+  const isRead = method === 'GET';
+
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(options.headers || {})
+  };
+
+  // ── GET: serve from cache, refresh in background ──
+  if (isRead) {
+    const cached = Cache.get(url);
+    if (cached) {
+      // Return cached immediately, then silently refresh
+      (async () => {
+        try {
+          const res = await fetch(API + url, { ...options, headers });
+          if (res.ok) {
+            const fresh = await res.json();
+            Cache.set(url, fresh);
+          }
+        } catch { /* network unavailable — keep showing cached */ }
+      })();
+      return cached;
+    }
+  }
+
+  // ── Actual network request ──
+  try {
+    const res = await fetch(API + url, { ...options, headers });
+    if (res.status === 401) { logout(); return null; }
+    const data = await res.json();
+
+    if (isRead && res.ok) {
+      Cache.set(url, data);
+    } else if (!isRead && res.ok) {
+      Cache.invalidate(url);
+    }
+
+    return data;
+  } catch (err) {
+    // Network error on a read — fall back to stale cache if available
+    if (isRead) {
+      const stale = Cache.get(url);
+      if (stale) return stale;
+    }
+    throw err;
+  }
+}
+
+// ─────────────────────────────────────────────
+//  Balance sync — fetch live stats and update every
+//  balance element on the current page
+// ─────────────────────────────────────────────
 async function syncBalance() {
   try {
     const data = await apiFetch('/api/user/dashboard-stats');
     if (!data?.success) return;
     const s = data.stats;
 
-    // Update stored user object
     const u = getUser() || {};
-    u.walletBalance   = s.walletBalance;
-    u.totalInvested   = s.totalInvested;
-    u.totalEarnings   = s.totalEarnings;
-    u.currencySymbol  = s.currencySymbol;
-    u.currency        = s.currency;
+    u.walletBalance  = s.walletBalance;
+    u.totalInvested  = s.totalInvested;
+    u.totalEarnings  = s.totalEarnings;
+    u.currencySymbol = s.currencySymbol;
+    u.currency       = s.currency;
     localStorage.setItem('user', JSON.stringify(u));
 
     const display = fmt(s.walletBalance, s.currencySymbol);
 
-    // Update every element that shows balance
-    document.querySelectorAll('[data-balance]').forEach(el => {
-      el.textContent = display;
-    });
-
-    // Topbar balance pill
-    const tb = document.getElementById('topBalance');
-    if (tb) tb.textContent = display;
-
-    // Sidebar footer balance
-    const sb = document.querySelector('.sidebar-footer [data-balance]');
-    if (sb) sb.textContent = display;
-
-    // Wallet page big number
-    const wb = document.getElementById('walletBal');
-    if (wb) wb.textContent = display;
+    document.querySelectorAll('[data-balance]').forEach(el => el.textContent = display);
+    const tb = document.getElementById('topBalance');   if (tb) tb.textContent = display;
+    const wb = document.getElementById('walletBal');    if (wb) wb.textContent = display;
 
     return s;
   } catch(e) { /* silent */ }
 }
 
+// ─────────────────────────────────────────────
+//  Auth helpers
+// ─────────────────────────────────────────────
 function requireAuth() {
   if (!getToken()) { window.location.href = '/login.html'; return false; }
   return true;
@@ -56,26 +177,15 @@ function requireAdmin() {
 }
 
 function logout() {
+  Cache.flush(); // wipe all cached data on logout
   localStorage.removeItem('token');
   localStorage.removeItem('user');
   window.location.href = '/login.html';
 }
 
-async function apiFetch(url, options = {}) {
-  const token = getToken();
-  const res = await fetch(API + url, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...(options.headers || {})
-    }
-  });
-  const data = await res.json();
-  if (res.status === 401) { logout(); return null; }
-  return data;
-}
-
+// ─────────────────────────────────────────────
+//  Formatting helpers
+// ─────────────────────────────────────────────
 function fmt(amount, symbol) {
   if (amount === undefined || amount === null) return '—';
   return `${symbol || ''}${Number(amount).toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -106,14 +216,15 @@ function showToast(msg, type = 'success') {
   setTimeout(() => t.remove(), 3500);
 }
 
-// Inject sidebar active state
+// ─────────────────────────────────────────────
+//  Sidebar helpers
+// ─────────────────────────────────────────────
 function setSidebarActive(id) {
   document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
   const el = document.getElementById(id);
   if (el) el.classList.add('active');
 }
 
-// Sidebar toggle for mobile
 function initSidebarToggle() {
   const ham = document.getElementById('hamburgerDash');
   const sidebar = document.getElementById('sidebar');
