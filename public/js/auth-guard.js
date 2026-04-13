@@ -18,7 +18,7 @@ const Cache = (() => {
     '/api/user/dashboard-stats':  2 * 60 * 1000,   // 2 min
     '/api/wallet/transactions':   2 * 60 * 1000,
     '/api/investments':           3 * 60 * 1000,
-    '/api/stocks':               10 * 60 * 1000,   // 10 min — rarely changes
+    '/api/stocks':                1 * 60 * 1000,   // 1 min — keep fresh
     '/api/wallet/deposit-accounts': 10 * 60 * 1000,
     '/api/user/profile':          5 * 60 * 1000,
     '/api/referral':              5 * 60 * 1000,
