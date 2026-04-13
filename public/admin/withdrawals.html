@@ -49,7 +49,9 @@
 <script src="/js/admin-guard.js"></script>
 <script>
   if (!requireAdmin()) throw '';
-  let currentAction = {};
+  let currentAction = {}, withdrawals = [];
+
+  const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 
   async function loadSidebar() {
     const stats = await apiFetch('/api/admin/stats');
@@ -62,41 +64,45 @@
     const status = document.getElementById('statusFilter').value;
     const data = await apiFetch('/api/admin/withdrawals' + (status ? '?status=' + status : ''));
     const table = document.getElementById('withdrawalTable');
-    const withdrawals = data?.withdrawals || [];
+    withdrawals = data?.withdrawals || [];
     const pending = withdrawals.filter(d => d.status === 'pending').length;
     document.getElementById('witCount').textContent = `${pending} Pending`;
     if (!withdrawals.length) { table.innerHTML = `<div class="empty-state"><div class="empty-icon">✅</div><h3>No Withdrawals Found</h3></div>`; return; }
     table.innerHTML = `<table><thead><tr><th>User</th><th>Amount</th><th>Method</th><th>Send To</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead><tbody>` +
       withdrawals.map(d => {
         const acc = d.accountDetails || {};
-        const sendTo = acc.network ? `${acc.network} MoMo: ${acc.accountNumber} (${acc.accountName})` : `${acc.bankName||'Bank'}: ${acc.accountNumber} (${acc.accountName})`;
+        const sendTo = acc.network ? `${esc(acc.network)} MoMo: ${esc(acc.accountNumber)} (${esc(acc.accountName)})` : `${esc(acc.bankName||'Bank')}: ${esc(acc.accountNumber)} (${esc(acc.accountName)})`;
         return `<tr>
-          <td><div class="td-user"><div class="td-avatar">${(d.user?.fullName||'?')[0].toUpperCase()}</div><div><div class="td-name">${d.user?.fullName||'—'}</div><div class="td-email">${d.user?.email||''}</div></div></div></td>
-          <td><strong style="color:var(--primary);">${d.user?.currencySymbol||'GH₵'}${d.amount}</strong></td>
-          <td style="font-size:12px;">${(d.method||'').replace(/_/g,' ')}</td>
+          <td><div class="td-user"><div class="td-avatar">${esc((d.user?.fullName||'?')[0].toUpperCase())}</div><div><div class="td-name">${esc(d.user?.fullName||'—')}</div><div class="td-email">${esc(d.user?.email||'')}</div></div></div></td>
+          <td><strong style="color:var(--primary);">${esc(d.user?.currencySymbol||'GH₵')}${esc(d.amount)}</strong></td>
+          <td style="font-size:12px;">${esc((d.method||'').replace(/_/g,' '))}</td>
           <td style="font-size:12px;max-width:180px;">${sendTo}</td>
           <td style="font-size:12px;">${new Date(d.createdAt).toLocaleString()}</td>
           <td>${statusBadge(d.status)}</td>
           <td>
             ${d.status === 'pending' ? `
             <div class="action-btns">
-              <button class="action-btn action-btn-approve" onclick="openAction('${d._id}','approve','${d.user?.fullName||''}','${d.amount}','${d.user?.currencySymbol||'GH₵'}','${sendTo.replace(/'/g,'')}')">Approve</button>
-              <button class="action-btn action-btn-reject" onclick="openAction('${d._id}','reject','${d.user?.fullName||''}','${d.amount}','${d.user?.currencySymbol||'GH₵'}','${sendTo.replace(/'/g,'')}')">Reject</button>
+              <button class="action-btn action-btn-approve" data-id="${esc(d._id)}" data-action="approve" onclick="openAction(this.dataset.id,this.dataset.action)">Approve</button>
+              <button class="action-btn action-btn-reject" data-id="${esc(d._id)}" data-action="reject" onclick="openAction(this.dataset.id,this.dataset.action)">Reject</button>
             </div>` : '<span style="font-size:12px;color:var(--text-muted);">Processed</span>'}
           </td>
         </tr>`;
       }).join('') + `</tbody></table>`;
   }
 
-  function openAction(id, action, name, amount, sym, sendTo) {
+  function openAction(id, action) {
+    const d = withdrawals.find(x => x._id === id);
+    if (!d) return;
     currentAction = { id, action };
     const isApprove = action === 'approve';
+    const acc = d.accountDetails || {};
     document.getElementById('actionTitle').textContent = isApprove ? '✅ Approve Withdrawal' : '❌ Reject Withdrawal';
-    document.getElementById('actionBody').innerHTML = `
+    const body = document.getElementById('actionBody');
+    body.innerHTML = `
       <div style="background:${isApprove?'#fff3cd':'rgba(30,107,60,.07)'};border-radius:10px;padding:16px;margin-bottom:16px;">
-        <div style="font-weight:600;margin-bottom:8px;">${name}</div>
-        <div style="font-size:1.2rem;font-weight:800;color:var(--primary);margin-bottom:8px;">${sym}${amount}</div>
-        ${isApprove ? `<div style="font-size:13px;padding:10px;background:rgba(200,151,26,.12);border-radius:8px;"><strong>Send payment to:</strong><br>${sendTo}</div>` : `<div style="font-size:13px;color:var(--text-muted);">The request will be rejected and funds refunded to user wallet.</div>`}
+        <div style="font-weight:600;margin-bottom:8px;" id="_mName"></div>
+        <div style="font-size:1.2rem;font-weight:800;color:var(--primary);margin-bottom:8px;" id="_mAmt"></div>
+        ${isApprove ? `<div style="font-size:13px;padding:10px;background:rgba(200,151,26,.12);border-radius:8px;" id="_mSend"><strong>Send payment to:</strong><br></div>` : `<div style="font-size:13px;color:var(--text-muted);">The request will be rejected and funds refunded to user wallet.</div>`}
       </div>
       <div class="form-group">
         <label class="form-label">Admin Note (optional)</label>
@@ -108,6 +114,17 @@
           ${isApprove ? '✅ Mark as Paid & Approve' : '❌ Reject & Refund'}
         </button>
       </div>`;
+    body.querySelector('#_mName').textContent = d.user?.fullName || '—';
+    body.querySelector('#_mAmt').textContent = (d.user?.currencySymbol || 'GH₵') + d.amount;
+    if (isApprove) {
+      const sendLine = acc.network ? `${acc.network} MoMo: ${acc.accountNumber} (${acc.accountName})` : `${acc.bankName||'Bank'}: ${acc.accountNumber} (${acc.accountName})`;
+      const sendEl = body.querySelector('#_mSend');
+      const strong = document.createElement('strong');
+      strong.textContent = 'Send payment to:';
+      sendEl.innerHTML = '';
+      sendEl.appendChild(strong);
+      sendEl.appendChild(document.createTextNode('\u00a0' + sendLine));
+    }
     document.getElementById('actionModal').classList.add('active');
   }
 

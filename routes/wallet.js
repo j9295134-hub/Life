@@ -62,40 +62,53 @@ router.post('/deposit', protect, async (req, res) => {
   }
 });
 
-// POST /api/wallet/withdraw
+// POST /api/wallet/withdraw  (atomic — balance deduct + txn record in one session)
 router.post('/withdraw', protect, async (req, res) => {
+  const mongoose = require('mongoose');
+  const session = await mongoose.startSession();
+  session.startTransaction();
   try {
     const { amount, method, accountName, accountNumber, bankName, network } = req.body;
     const parsedAmount = parseFloat(amount);
 
     if (!parsedAmount || parsedAmount < MIN_WITHDRAWAL) {
+      await session.abortTransaction(); session.endSession();
       return res.status(400).json({ success: false, message: `Minimum withdrawal is ${req.user.currencySymbol}${MIN_WITHDRAWAL}.` });
     }
-    const user = await User.findById(req.user._id);
+
+    const VALID_METHODS = ['mtn_momo', 'telecel_momo', 'airteltigo_momo', 'bank'];
+    if (!VALID_METHODS.includes(method)) {
+      await session.abortTransaction(); session.endSession();
+      return res.status(400).json({ success: false, message: 'Invalid payment method.' });
+    }
+
+    const user = await User.findById(req.user._id).session(session);
     if (user.walletBalance < parsedAmount) {
+      await session.abortTransaction(); session.endSession();
       return res.status(400).json({ success: false, message: 'Insufficient wallet balance.' });
     }
 
-    const accountDetails = { accountName, accountNumber, bankName: bankName || null, network: network || null };
-
-    // Hold the amount
     user.walletBalance -= parsedAmount;
-    await user.save();
+    await user.save({ session });
 
-    const txn = await Transaction.create({
+    const [txn] = await Transaction.create([{
       user: req.user._id,
       type: 'withdrawal',
       amount: parsedAmount,
       currency: req.user.currency,
       method,
-      accountDetails,
+      accountDetails: { accountName, accountNumber, bankName: bankName || null, network: network || null },
       reference: generateRef(),
       status: 'pending',
       note: `Withdrawal via ${method.replace(/_/g, ' ')}`
-    });
+    }], { session });
 
+    await session.commitTransaction();
+    session.endSession();
     res.status(201).json({ success: true, message: 'Withdrawal request submitted. Processing within 24 hours.', transaction: txn });
   } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
     console.error(err);
     res.status(500).json({ success: false, message: 'Server error.' });
   }

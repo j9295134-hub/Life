@@ -8,25 +8,59 @@ const cron = require('node-cron');
 
 const app = express();
 
-// Rate limiting — auth routes only (strict), all other routes unrestricted
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 30,
-  message: { success: false, message: 'Too many attempts. Please try again later.' }
-});
+// ── CORS — restrict to frontend domain only ──
+const allowedOrigins = [
+  'https://life-lovat.vercel.app',
+  'http://localhost:3000',
+  'http://localhost:5500'
+];
+app.use(cors({
+  origin: (origin, cb) => {
+    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+    cb(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// ── Body parsing with size limits ──
+app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Routes
-app.use('/api/auth', authLimiter, require('./routes/auth'));
-app.use('/api/stocks', require('./routes/stocks'));
-app.use('/api/investments', require('./routes/investments'));
-app.use('/api/wallet', require('./routes/wallet'));
-app.use('/api/user', require('./routes/user'));
-app.use('/api/admin', require('./routes/admin'));
+// ── Security headers ──
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  if (process.env.NODE_ENV === 'production') {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  }
+  next();
+});
+
+// ── Rate limiters ──
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, max: 30,
+  message: { success: false, message: 'Too many attempts. Please try again later.' }
+});
+const walletLimiter = rateLimit({
+  windowMs: 60 * 1000, max: 10,
+  message: { success: false, message: 'Too many requests. Please slow down.' }
+});
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, max: 200,
+  message: { success: false, message: 'Too many requests. Please try again later.' }
+});
+
+// ── Routes ──
+app.use('/api/auth',        authLimiter,    require('./routes/auth'));
+app.use('/api/wallet',      walletLimiter,  require('./routes/wallet'));
+app.use('/api/investments', generalLimiter, require('./routes/investments'));
+app.use('/api/stocks',      generalLimiter, require('./routes/stocks'));
+app.use('/api/user',        generalLimiter, require('./routes/user'));
+app.use('/api/admin',       generalLimiter, require('./routes/admin'));
 
 // Cron: Check and credit matured investments every minute
 const Investment = require('./models/Investment');

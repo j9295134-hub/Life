@@ -46,6 +46,8 @@
   if (!requireAdmin()) throw '';
   let allUsers = [], selectedUser = null;
 
+  const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+
   async function loadSidebar() {
     const stats = await apiFetch('/api/admin/stats');
     document.getElementById('sidebar').innerHTML = buildAdminSidebar(stats?.stats?.pendingDeposits, stats?.stats?.pendingWithdrawals);
@@ -71,25 +73,29 @@
     table.innerHTML = `<table><thead><tr><th>User</th><th>Country</th><th>Wallet</th><th>Invested</th><th>Referrals</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead><tbody>` +
       users.map(u => `
       <tr>
-        <td><div class="td-user"><div class="td-avatar">${u.fullName[0].toUpperCase()}</div><div><div class="td-name">${u.fullName}</div><div class="td-email">${u.email}</div></div></div></td>
-        <td style="font-size:13px;">${u.country||'—'}</td>
-        <td><strong style="color:var(--primary);">${u.currencySymbol||'GH₵'}${(u.walletBalance||0).toFixed(2)}</strong></td>
-        <td style="font-size:13px;">${u.currencySymbol||'GH₵'}${(u.totalInvested||0).toFixed(2)}</td>
-        <td style="font-size:13px;">${u.referralCount||0}</td>
+        <td><div class="td-user"><div class="td-avatar">${esc(u.fullName[0].toUpperCase())}</div><div><div class="td-name">${esc(u.fullName)}</div><div class="td-email">${esc(u.email)}</div></div></div></td>
+        <td style="font-size:13px;">${esc(u.country||'—')}</td>
+        <td><strong style="color:var(--primary);">${esc(u.currencySymbol||'GH₵')}${esc((u.walletBalance||0).toFixed(2))}</strong></td>
+        <td style="font-size:13px;">${esc(u.currencySymbol||'GH₵')}${esc((u.totalInvested||0).toFixed(2))}</td>
+        <td style="font-size:13px;">${esc(u.referralCount||0)}</td>
         <td style="font-size:12px;">${new Date(u.createdAt).toLocaleDateString()}</td>
         <td>${u.isSuspended ? '<span class="badge badge-danger">Suspended</span>' : '<span class="badge badge-success">Active</span>'}</td>
         <td>
           <div class="action-btns">
-            <button class="action-btn action-btn-edit" onclick="openWalletAction('${u._id}','${u.fullName}','${u.currencySymbol||'GH₵'}')">Wallet</button>
-            <button class="action-btn ${u.isSuspended?'action-btn-approve':'action-btn-reject'}" onclick="toggleSuspend('${u._id}','${u.fullName}',${u.isSuspended})">${u.isSuspended?'Unsuspend':'Suspend'}</button>
+            <button class="action-btn action-btn-edit" data-id="${esc(u._id)}" onclick="openWalletAction(this.dataset.id)">Wallet</button>
+            <button class="action-btn ${u.isSuspended?'action-btn-approve':'action-btn-reject'}" data-id="${esc(u._id)}" onclick="toggleSuspend(this.dataset.id)">${u.isSuspended?'Unsuspend':'Suspend'}</button>
           </div>
         </td>
       </tr>`).join('') + `</tbody></table>`;
   }
 
-  function openWalletAction(id, name, sym) {
-    selectedUser = { id, name, sym };
-    document.getElementById('uModalTitle').textContent = `Wallet — ${name}`;
+  function openWalletAction(id) {
+    const u = allUsers.find(x => x._id === id);
+    if (!u) return;
+    selectedUser = { id: u._id };
+    const sym = u.currencySymbol || 'GH₵';
+    document.getElementById('uModalTitle').textContent = '';
+    document.getElementById('uModalTitle').textContent = `Wallet — ${u.fullName}`;
     document.getElementById('uModalBody').innerHTML = `
       <div class="form-group">
         <label class="form-label">Action</label>
@@ -99,7 +105,7 @@
         </select>
       </div>
       <div class="form-group">
-        <label class="form-label">Amount (${sym})</label>
+        <label class="form-label">Amount (${esc(sym)})</label>
         <input type="number" class="form-control" id="walletAmount" placeholder="Enter amount" min="0.01" step="0.01" required/>
       </div>
       <div class="form-group">
@@ -125,9 +131,11 @@
     else showToast(data?.message || 'Action failed.', 'error');
   }
 
-  async function toggleSuspend(id, name, isSuspended) {
-    const action = isSuspended ? 'reactivate' : 'suspend';
-    if (!confirm(`${action.charAt(0).toUpperCase()+action.slice(1)} ${name}?`)) return;
+  async function toggleSuspend(id) {
+    const u = allUsers.find(x => x._id === id);
+    if (!u) return;
+    const action = u.isSuspended ? 'reactivate' : 'suspend';
+    if (!confirm(`${action.charAt(0).toUpperCase()+action.slice(1)} ${u.fullName}?`)) return;
     const data = await apiFetch(`/api/admin/users/${id}/suspend`, { method:'PUT' });
     if (data?.success) { showToast(data.message, 'success'); loadUsers(); }
     else showToast(data?.message || 'Action failed.', 'error');

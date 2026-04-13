@@ -38,11 +38,16 @@ router.get('/stats', auth, async (req, res) => {
   }
 });
 
-// GET /api/admin/users
+// GET /api/admin/users  (paginated)
 router.get('/users', auth, async (req, res) => {
   try {
-    const users = await User.find({ role: 'user' }).select('-password').sort({ createdAt: -1 });
-    res.json({ success: true, users });
+    const page  = Math.max(1, parseInt(req.query.page)  || 1);
+    const limit = Math.min(100, parseInt(req.query.limit) || 50);
+    const total = await User.countDocuments({ role: 'user' });
+    const users = await User.find({ role: 'user' })
+      .select('-password').sort({ createdAt: -1 })
+      .skip((page - 1) * limit).limit(limit);
+    res.json({ success: true, users, pagination: { page, limit, total, pages: Math.ceil(total / limit) } });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Server error.' });
   }
@@ -86,11 +91,15 @@ router.put('/users/:id/wallet', auth, async (req, res) => {
 });
 
 // GET /api/admin/deposits
+const VALID_STATUSES = ['pending', 'approved', 'rejected', 'completed', 'cancelled'];
 router.get('/deposits', auth, async (req, res) => {
   try {
     const { status } = req.query;
     const filter = { type: 'deposit' };
-    if (status) filter.status = status;
+    if (status) {
+      if (!VALID_STATUSES.includes(status)) return res.status(400).json({ success: false, message: 'Invalid status filter.' });
+      filter.status = status;
+    }
     const deposits = await Transaction.find(filter).populate('user', 'fullName email currency currencySymbol').sort({ createdAt: -1 });
     res.json({ success: true, deposits });
   } catch (err) {
@@ -129,7 +138,10 @@ router.get('/withdrawals', auth, async (req, res) => {
   try {
     const { status } = req.query;
     const filter = { type: 'withdrawal' };
-    if (status) filter.status = status;
+    if (status) {
+      if (!VALID_STATUSES.includes(status)) return res.status(400).json({ success: false, message: 'Invalid status filter.' });
+      filter.status = status;
+    }
     const withdrawals = await Transaction.find(filter).populate('user', 'fullName email currency currencySymbol').sort({ createdAt: -1 });
     res.json({ success: true, withdrawals });
   } catch (err) {
@@ -177,9 +189,15 @@ router.get('/settings', auth, async (req, res) => {
 });
 
 // PUT /api/admin/settings
+const ALLOWED_SETTINGS_KEYS = [
+  'deposit_accounts', 'min_deposit', 'min_withdrawal',
+  'referral_bonus', 'site_name', 'maintenance_mode', 'withdrawal_accounts'
+];
 router.put('/settings', auth, async (req, res) => {
   try {
     const updates = req.body;
+    const invalidKeys = Object.keys(updates).filter(k => !ALLOWED_SETTINGS_KEYS.includes(k));
+    if (invalidKeys.length) return res.status(400).json({ success: false, message: `Invalid setting key(s): ${invalidKeys.join(', ')}` });
     for (const [key, value] of Object.entries(updates)) {
       await Settings.findOneAndUpdate({ key }, { key, value, updatedAt: new Date() }, { upsert: true });
     }
