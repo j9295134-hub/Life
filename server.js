@@ -62,6 +62,19 @@ app.use('/api/stocks',      generalLimiter, require('./routes/stocks'));
 app.use('/api/user',        generalLimiter, require('./routes/user'));
 app.use('/api/admin',       generalLimiter, require('./routes/admin'));
 
+// ── Public contact endpoint (no auth — all pages use this) ──
+const Settings = require('./models/Settings');
+app.get('/api/contact', generalLimiter, async (req, res) => {
+  try {
+    const docs = await Settings.find({ key: { $in: ['whatsapp','telegram','email'] } });
+    const r = {};
+    docs.forEach(d => r[d.key] = d.value);
+    res.json({ success: true, whatsapp: r.whatsapp||'', telegram: r.telegram||'', email: r.email||'' });
+  } catch (err) {
+    res.status(500).json({ success: false });
+  }
+});
+
 // Cron: Check and credit matured investments every minute
 const Investment = require('./models/Investment');
 const User = require('./models/User');

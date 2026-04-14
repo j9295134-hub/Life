@@ -191,7 +191,8 @@ router.get('/settings', auth, async (req, res) => {
 // PUT /api/admin/settings
 const ALLOWED_SETTINGS_KEYS = [
   'deposit_accounts', 'min_deposit', 'min_withdrawal',
-  'referral_bonus', 'site_name', 'maintenance_mode', 'withdrawal_accounts'
+  'referral_bonus', 'site_name', 'maintenance_mode', 'withdrawal_accounts',
+  'whatsapp', 'telegram', 'email'
 ];
 router.put('/settings', auth, async (req, res) => {
   try {

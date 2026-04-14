@@ -94,14 +94,15 @@
 
     <h2 style="margin-bottom:16px;">13. Contact</h2>
     <p style="margin-bottom:16px;">For questions regarding these Terms and Conditions, please contact our support team:</p>
-    <div style="background:var(--bg-light);border-radius:10px;padding:16px;">
-      <p>📧 Email: support@agriclife.com</p>
-      <p>📱 WhatsApp: Available via the support section in your dashboard</p>
-      <p>✈️ Telegram: Available via the support section in your dashboard</p>
+    <div style="background:var(--bg-light);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:10px;">
+      <a href="#" data-contact="email" style="color:var(--text);text-decoration:none;">📧 Email: <span data-contact-text="email">support@agriclife.com</span></a>
+      <a href="#" data-contact="whatsapp" style="color:var(--text);text-decoration:none;">📱 WhatsApp: <span data-contact-text="whatsapp">Available via the support section in your dashboard</span></a>
+      <a href="#" data-contact="telegram" style="color:var(--text);text-decoration:none;">✈️ Telegram: <span data-contact-text="telegram">Available via the support section in your dashboard</span></a>
     </div>
   </div>
 </section>
 
+<script src="/js/contact.js"></script>
 <footer class="footer">
   <div class="footer-grid">
     <div class="footer-brand"><div class="brand">Agric<span style="color:var(--accent-light)">Life</span></div><p>A trusted agricultural investment platform.</p></div>
