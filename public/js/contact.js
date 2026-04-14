@@ -16,16 +16,13 @@
     const emHref = em ? 'mailto:' + em : null;
 
     document.querySelectorAll('[data-contact="whatsapp"]').forEach(el => {
-      if (waHref) { el.href = waHref; el.removeAttribute('data-contact-missing'); }
-      else el.style.display = 'none';
+      if (waHref) el.href = waHref;
     });
     document.querySelectorAll('[data-contact="telegram"]').forEach(el => {
-      if (tgHref) { el.href = tgHref; el.removeAttribute('data-contact-missing'); }
-      else el.style.display = 'none';
+      if (tgHref) el.href = tgHref;
     });
     document.querySelectorAll('[data-contact="email"]').forEach(el => {
-      if (emHref) { el.href = emHref; el.removeAttribute('data-contact-missing'); }
-      else el.style.display = 'none';
+      if (emHref) el.href = emHref;
     });
     // Update any visible text spans with the actual value
     document.querySelectorAll('[data-contact-text="whatsapp"]').forEach(el => { if (wa) el.textContent = wa; });
